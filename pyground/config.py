@@ -26,11 +26,11 @@ from pyground.utils import dict2table
 debug = False
 
 
-class customdict(defaultdict):
+class Configuration(defaultdict):
 
     def __init__(self):
         # https://stackoverflow.com/a/45411093/892904
-        super(customdict, self).__init__()
+        super(Configuration, self).__init__()
 
     def __getattr__(self, key):
         """
@@ -71,7 +71,7 @@ class customdict(defaultdict):
 
                 self.logdebug('   > Creating new dict() with name <{}>'.format(
                     attribute_name))
-                setattr(this_object, attribute_name, customdict())
+                setattr(this_object, attribute_name, Configuration())
 
                 self.logdebug('     > New Attribute <{}> type is: {}'.format(
                     attribute_name, type(getattr(this_object, attribute_name))
@@ -83,7 +83,7 @@ class customdict(defaultdict):
                 this_object.add_dict(new_object, param_dictionary[param_name])
 
 
-def config(params_filename='params.yaml'):
+def config(params_filename='params.yaml') -> Configuration:
     """
     Read the parameters from a filename
 
@@ -94,7 +94,7 @@ def config(params_filename='params.yaml'):
     Returns:
     A customdict object containing the parameters read from file.
     """
-    config = customdict()
+    config = Configuration()
     cwd = Path(getcwd())
     params_path: str = str(cwd.joinpath(params_filename))
 

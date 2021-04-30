@@ -4,7 +4,11 @@ import random
 from typing import List
 
 import numpy as np
+import pandas as pd
+
+from pandas import DataFrame
 from prettytable import PrettyTable
+from sklearn.preprocessing import RobustScaler
 from termcolor import colored
 
 
@@ -82,14 +86,18 @@ def print_progbar(percent: float, max: int = 20, do_print=True,
         return pb
 
 
-def reset_seeds():
-    """Reset all internal seeds to same value always"""
-    np.random.seed(1)
-    random.seed(2)
+def reset_seeds(seed=1):
+    """
+    Reset all internal seeds to same value always
+    """
+    np.random.seed(seed)
+    random.seed(seed)
 
 
 def dict2table(dictionary: dict) -> str:
-    """Converts a table into an ascii table."""
+    """
+    Converts a table into an ascii table.
+    """
     t = PrettyTable()
     t.field_names = ['Parameter', 'Value']
     for header in t.field_names:
@@ -106,3 +114,48 @@ def dict2table(dictionary: dict) -> str:
         return t
 
     return str(tabulate_dictionary(t, dictionary))
+
+
+def gen_toy_dataset(N: int = 1000, scale=False) -> (DataFrame, dict):
+    """
+    Generate a toy dataset with 5 variables, and the following causal 
+    relationship among them
+    z->x, z->t, z->y, t->y, k
+
+    Params
+    ------
+        - N: Number of samples to generate
+        - scale: Whether scaling the resulting DataFrame with RobustScaler
+
+    Example
+    -------
+        >>> from pyground.utils import gen_toy_dataset
+        >>> toy_dataset, true_order = gen_toy_dataset(N=5)
+        >>> toy_dataset
+                    z         x         t         y         k
+            0 -0.165956 -1.603104  1.144675  2.854501  3.007446
+            1  0.440649 -1.060788  3.766573 -0.978671  4.682616
+            2 -0.999771  0.381785  2.226256  0.372360 -1.865758
+            3 -0.395335 -0.256640  4.783731 -5.642051  1.923226
+            4 -0.706488  0.654393  0.526440 -2.708605  3.763892
+    """
+    reset_seeds()
+    E1 = np.random.uniform(low=-1.0, high=1.0, size=N)
+    E2 = np.random.uniform(low=-2.0, high=2.0, size=N)
+    E3 = np.random.uniform(low=-3.0, high=3.0, size=N)
+    E4 = np.random.uniform(low=-4.0, high=4.0, size=N)
+    E5 = np.random.uniform(low=-5.0, high=5.0, size=N)
+
+    df = DataFrame()
+    df['z'] = E1
+    df['x'] = np.power(df['z'], 2) + E2
+    df['t'] = 4. * np.sqrt(np.abs(df['z'])) + E3
+    df['y'] = 2. * np.sin(df['z']) + 2 * np.sin(df['t']) + E4
+    df['k'] = E5
+
+    if scale:
+        scaler = RobustScaler()
+        df[df.columns.values] = scaler.fit_transform(df[df.columns.values])
+
+    true_structure = {'z': ['x', 'y', 't'], 't': ['y']}
+    return df, true_structure

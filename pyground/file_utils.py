@@ -11,7 +11,25 @@ from pandas import DataFrame
 from sklearn.preprocessing import MinMaxScaler
 
 
-def file_exists(given_filepath: str, my_dir: str) -> str:
+def file_exists(given_filepath: str, my_dir: str) -> bool:
+    """
+    Check if the file exists as specified in argument, or try to find
+    it using the local path of the script
+
+    :param given_filepath:
+    :return: Whether the file has been found.
+    """
+    if os.path.exists(given_filepath) is True:
+        return True
+    else:
+        new_filepath = os.path.join(my_dir, given_filepath)
+        if os.path.exists(new_filepath) is True:
+            return True
+        else:
+            return False
+
+
+def locate_file(given_filepath: str, my_dir: str) -> str:
     """
     Check if the file exists as specified in argument, or try to find
     it using the local path of the script
