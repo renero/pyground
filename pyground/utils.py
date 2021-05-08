@@ -116,7 +116,8 @@ def dict2table(dictionary: dict) -> str:
     return str(tabulate_dictionary(t, dictionary))
 
 
-def gen_toy_dataset(N: int = 1000, scale=False) -> (DataFrame, dict):
+def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
+                    num_samples=1000, scale=False):
     """
     Generate a toy dataset with 5 variables, and the following causal 
     relationship among them
@@ -124,13 +125,19 @@ def gen_toy_dataset(N: int = 1000, scale=False) -> (DataFrame, dict):
 
     Params
     ------
-        - N: Number of samples to generate
+        - mu: mean for distributions of indep variables
+        - sigma: variance of distributions of indep variables
+        - s: mean for the lognormal distr.
+        - sigma_z0: parameter to compute "x". 
+        - sigma_z1: parameter to compute "x".
+        - num_samples: Number of samples to generate
         - scale: Whether scaling the resulting DataFrame with RobustScaler
+                 (default is False)
 
     Example
     -------
         >>> from pyground.utils import gen_toy_dataset
-        >>> toy_dataset, true_order = gen_toy_dataset(N=5)
+        >>> toy_dataset, true_order = gen_toy_dataset(num_samples=5)
         >>> toy_dataset
                     z         x         t         y         k
             0 -0.165956 -1.603104  1.144675  2.854501  3.007446
@@ -140,22 +147,28 @@ def gen_toy_dataset(N: int = 1000, scale=False) -> (DataFrame, dict):
             4 -0.706488  0.654393  0.526440 -2.708605  3.763892
     """
     reset_seeds()
-    E1 = np.random.uniform(low=-1.0, high=1.0, size=N)
-    E2 = np.random.uniform(low=-2.0, high=2.0, size=N)
-    E3 = np.random.uniform(low=-3.0, high=3.0, size=N)
-    E4 = np.random.uniform(low=-4.0, high=4.0, size=N)
-    E5 = np.random.uniform(low=-5.0, high=5.0, size=N)
 
-    df = DataFrame()
-    df['z'] = E1
-    df['x'] = np.power(df['z'], 2) + E2
-    df['t'] = 4. * np.sqrt(np.abs(df['z'])) + E3
-    df['y'] = 2. * np.sin(df['z']) + 2 * np.sin(df['t']) + E4
-    df['k'] = E5
+    def fx(z):
+        return (sigma_z1*sigma_z1*z) + (sigma_z0*sigma_z0*(1-z))
 
-    if scale:
+    def ft(z):
+        return 0.75*z + 0.25*(1-z)
+
+    def fy(T):
+        return (expit(3.*(T[0] + 2.*(2.*T[1]-1.))))
+
+    z = lognorm.rvs(s=0.25, scale=1.0, size=sample_size)
+    x_z = [norm.rvs(loc=zi, scale=fx(zi)) for zi in z]
+    t_z = np.array(list(map(ft, z)))
+    y_t_z = np.array(list(map(fy, zip(z, t_z))))
+    k = norm.rvs(loc=0.0, scale=1.0, size=sample_size)
+
+    dataset = pd.DataFrame({'x': x_z, 't': t_z, 'y': y_t_z, 'z': z, 'k': k})
+    dataset = dataset.astype(float)
+    if scale is True:
         scaler = RobustScaler()
-        df[df.columns.values] = scaler.fit_transform(df[df.columns.values])
+        dataset = pd.DataFrame(data=scaler.fit_transform(dataset),
+                               columns=['x', 't', 'y', 'z', 'k'])
 
     true_structure = {'z': ['x', 'y', 't'], 't': ['y']}
-    return df, true_structure
+    return dataset, true_structure
