@@ -8,6 +8,8 @@ import pandas as pd
 
 from pandas import DataFrame
 from prettytable import PrettyTable
+from scipy.stats import bernoulli, norm, lognorm
+from scipy.special import expit   # this is the sigmoid function
 from sklearn.preprocessing import RobustScaler
 from termcolor import colored
 
@@ -157,11 +159,11 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
     def fy(T):
         return (expit(3.*(T[0] + 2.*(2.*T[1]-1.))))
 
-    z = lognorm.rvs(s=0.25, scale=1.0, size=sample_size)
+    z = lognorm.rvs(s=0.25, scale=1.0, size=num_samples)
     x_z = [norm.rvs(loc=zi, scale=fx(zi)) for zi in z]
     t_z = np.array(list(map(ft, z)))
     y_t_z = np.array(list(map(fy, zip(z, t_z))))
-    k = norm.rvs(loc=0.0, scale=1.0, size=sample_size)
+    k = norm.rvs(loc=0.0, scale=1.0, size=num_samples)
 
     dataset = pd.DataFrame({'x': x_z, 't': t_z, 'y': y_t_z, 'z': z, 'k': k})
     dataset = dataset.astype(float)
