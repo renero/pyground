@@ -1,14 +1,15 @@
 # os.environ['PYTHONHASHSEED'] = '0'
 
-import random
-from typing import List
-
+import random as rand
 import numpy as np
 import pandas as pd
+
 from prettytable import PrettyTable
+from random import randint, random
 from scipy.special import expit  # this is the sigmoid function
 from scipy.stats import norm, lognorm
 from sklearn.preprocessing import RobustScaler
+from typing import List
 
 
 def letter_in_string(string, letter):
@@ -85,12 +86,12 @@ def print_progbar(percent: float, max: int = 20, do_print=True,
         return pb
 
 
-def reset_seeds(seed=1):
+def reset_seeds(my_seed=1):
     """
     Reset all internal seeds to same value always
     """
-    np.random.seed(seed)
-    random.seed(seed)
+    np.random.seed(my_seed)
+    rand.seed(my_seed)
 
 
 def dict2table(dictionary: dict) -> str:
@@ -221,7 +222,9 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
         A dataframe with 'num_feat' features following a given causal
         relationship, and the true structure of it.
 
+
     Examples:
+    ---------
         >>> from pyground.utils import gen_toy_dataset
         >>> toy_dataset, true_order = gen_toy_dataset(num_samples=5)
         >>> toy_dataset
@@ -249,13 +252,13 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
     y_t_z = np.array(list(map(fy, zip(z, t_z))))
     k = norm.rvs(loc=0.0, scale=1.0, size=num_samples)
     features = np.array([x_z, t_z, y_t_z, z, k])
-    column_names=['x', 't', 'y', 'z', 'k']
+    column_names = ['x', 't', 'y', 'z', 'k']
     true_structure = {'z': ['x', 'y', 't'], 't': ['y']}
 
     # Add extra features if needed
     num_extra_features = num_feats - 5
     if num_extra_features > 0:
-        extra_features = add_extra_features(num_feats-5, k)
+        extra_features = add_extra_features(num_feats - 5, k)
         features = np.append(features, extra_features, axis=1)
         true_structure['k'] = []
         # set the name of the extra columns (k1, k2, k3...)
