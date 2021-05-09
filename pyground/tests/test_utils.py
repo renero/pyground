@@ -1,6 +1,6 @@
 import pytest
 
-from ..utils import reset_seeds
+from ..utils import reset_seeds, gen_toy_dataset
 
 
 #############################################################################
@@ -12,3 +12,11 @@ def test_reset_seeds():
         reset_seeds(1)
     except AttributeError:
         pytest.fail('Unexpected error')
+
+
+def test_gen_toy_dataset():
+    try:
+        data, true_structure = gen_toy_dataset(scale=True)
+    except ValueError:
+        pytest.fail('Unexpected error')
+

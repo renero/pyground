@@ -200,7 +200,7 @@ def add_extra_features(num_feats: int,
 
 
 def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
-                    num_samples=1000, num_feats=5, scale=False):
+                    num_samples=1000, num_feats=5, scale=False, seed=2021):
     """
     Generate a toy dataset with 5 variables (or more), and the following causal
     relationship among them: z->x, z->t, z->y, t->y, k1, k2->k1, k3->k1
@@ -235,7 +235,7 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
             3 -0.395335 -0.256640  4.783731 -5.642051  1.923226
             4 -0.706488  0.654393  0.526440 -2.708605  3.763892
     """
-    reset_seeds()
+    reset_seeds(my_seed=seed)
 
     def fx(z):
         return (sigma_z1 * sigma_z1 * z) + (sigma_z0 * sigma_z0 * (1 - z))
@@ -251,7 +251,7 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
     t_z = np.array(list(map(ft, z)))
     y_t_z = np.array(list(map(fy, zip(z, t_z))))
     k = norm.rvs(loc=0.0, scale=1.0, size=num_samples)
-    features = np.array([x_z, t_z, y_t_z, z, k])
+    features = np.array([x_z, t_z, y_t_z, z, k]).T
     column_names = ['x', 't', 'y', 'z', 'k']
     true_structure = {'z': ['x', 'y', 't'], 't': ['y']}
 
@@ -272,6 +272,6 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
     if scale is True:
         scaler = RobustScaler()
         dataset = pd.DataFrame(data=scaler.fit_transform(dataset),
-                               columns=['x', 't', 'y', 'z', 'k'])
+                               columns=column_names)
 
     return dataset, true_structure
