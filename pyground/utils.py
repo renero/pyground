@@ -263,8 +263,8 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
         true_structure['k'] = []
         # set the name of the extra columns (k1, k2, k3...)
         for i in range(num_extra_features):
-            column_names.append(f'k{i}')
-            true_structure['k'].append(f'k{i}')
+            column_names.append(f'k{i+1}')
+            true_structure['k'].append(f'k{i+1}')
 
     # Transform everything in a dataframe
     dataset = pd.DataFrame(data=features, columns=column_names)
