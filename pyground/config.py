@@ -100,6 +100,7 @@ def config(params_filename='.pyground.yaml') -> Configuration:
     cwd = Path(getcwd())
     params_path: str = str(cwd.joinpath(params_filename))
     home_yaml = False
+    bad_yaml = False
 
     try:
         with open(params_path, 'r') as stream:
@@ -108,6 +109,7 @@ def config(params_filename='.pyground.yaml') -> Configuration:
                 config.add_dict(config, params_read)
             except YAMLError as exc:
                 print("YAML bad formatted. Ignored.")
+                bad_yaml = True
                 pass
     except FileNotFoundError as fnfe:
         params_path: str = str(home.joinpath(params_filename))
@@ -119,6 +121,7 @@ def config(params_filename='.pyground.yaml') -> Configuration:
                     home_yaml = True
                 except YAMLError as exc:
                     print("YAML bad formatted. Ignored.")
+                    bad_yaml = True
                     pass
         except FileNotFoundError as fnfe:
             print("No params.yaml parameters file. Taking defaults.")
@@ -130,6 +133,8 @@ def config(params_filename='.pyground.yaml') -> Configuration:
     if 'log_level' not in config:
         config.log_level = 3  # default value = WARNING
     config.log = Logger(config.log_level)
+    if bad_yaml:
+        config.log.warn('Bad formatted YAML!')
     if home_yaml:
         config.log.info("Home folder YAML file loaded")
     else:
