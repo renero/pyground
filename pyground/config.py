@@ -20,8 +20,8 @@ from pathlib import Path
 
 from yaml import safe_load, YAMLError
 
-from pyground.logger import Logger
-from pyground.utils import dict2table
+from .logger import Logger
+from .utils import dict2table
 
 debug = False
 
@@ -83,20 +83,23 @@ class Configuration(defaultdict):
                 this_object.add_dict(new_object, param_dictionary[param_name])
 
 
-def config(params_filename='params.yaml') -> Configuration:
+def config(params_filename='.pyground.yaml') -> Configuration:
     """
     Read the parameters from a filename
 
     Args:
     - params_filename: the name of the YAML file you want to use as source
-        of parameters
+        of parameters. If none specified, a file called ".pyground.yaml" is
+        searched for in local directory first, and then in home folder.
 
     Returns:
     A customdict object containing the parameters read from file.
     """
     config = Configuration()
+    home = Path.home()
     cwd = Path(getcwd())
     params_path: str = str(cwd.joinpath(params_filename))
+    home_yaml = False
 
     try:
         with open(params_path, 'r') as stream:
@@ -107,7 +110,19 @@ def config(params_filename='params.yaml') -> Configuration:
                 print("YAML bad formatted. Ignored.")
                 pass
     except FileNotFoundError as fnfe:
-        print("No params.yaml parameters file. Taking defaults.")
+        params_path: str = str(home.joinpath(params_filename))
+        try:
+            with open(params_path, 'r') as stream:
+                try:
+                    params_read = safe_load(stream)
+                    config.add_dict(config, params_read)
+                    home_yaml = True
+                except YAMLError as exc:
+                    print("YAML bad formatted. Ignored.")
+                    pass
+        except FileNotFoundError as fnfe:
+            print("No params.yaml parameters file. Taking defaults.")
+            pass
 
     #
     # Set log_level and start the logger
@@ -115,5 +130,9 @@ def config(params_filename='params.yaml') -> Configuration:
     if 'log_level' not in config:
         config.log_level = 3  # default value = WARNING
     config.log = Logger(config.log_level)
+    if home_yaml:
+        config.log.info("Home folder YAML file loaded")
+    else:
+        config.log.info("Local folder YAML file loaded")
 
     return config

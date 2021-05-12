@@ -1,15 +1,15 @@
 # os.environ['PYTHONHASHSEED'] = '0'
 
 import random as rand
+from random import randint, random
+from typing import List
+
 import numpy as np
 import pandas as pd
-
 from prettytable import PrettyTable
-from random import randint, random
 from scipy.special import expit  # this is the sigmoid function
 from scipy.stats import norm, lognorm
 from sklearn.preprocessing import RobustScaler
-from typing import List
 
 
 def letter_in_string(string, letter):
@@ -263,8 +263,8 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
         true_structure['k'] = []
         # set the name of the extra columns (k1, k2, k3...)
         for i in range(num_extra_features):
-            column_names.append(f'k{i+1}')
-            true_structure['k'].append(f'k{i+1}')
+            column_names.append(f'k{i + 1}')
+            true_structure['k'].append(f'k{i + 1}')
 
     # Transform everything in a dataframe
     dataset = pd.DataFrame(data=features, columns=column_names)
@@ -275,3 +275,18 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
                                columns=column_names)
 
     return dataset, true_structure
+
+
+def matprint(mat, labels):
+    max_label = max([len(lab) for lab in labels])
+    print("  ")
+    for i, lab in enumerate(labels):
+        print("{:>12s}".format(lab), end="  ")
+    bar_length = ((len(labels) - 1) * 14) + 12 + 1
+    print("\n  ", "-" * bar_length)
+    for j, x in enumerate(mat):
+        print(("{:>" + str(max_label) + "s}").format(labels[j]), end="  ")
+        for i, y in enumerate(x):
+            print("{:>+12.4f}".format(y),
+                  end="  ")
+        print("")
