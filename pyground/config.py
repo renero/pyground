@@ -83,9 +83,10 @@ class Configuration(defaultdict):
                 this_object.add_dict(new_object, param_dictionary[param_name])
 
 
-def config(params_filename='.pyground.yaml') -> Configuration:
+def config(params_filename='.pyground.yaml') -> (Configuration, Logger):
     """
-    Read the parameters from a filename
+    Read the parameters from a filename, and returns a dictionary (default)
+    and a basic logger.
 
     Args:
     - params_filename: the name of the YAML file you want to use as source
@@ -93,51 +94,55 @@ def config(params_filename='.pyground.yaml') -> Configuration:
         searched for in local directory first, and then in home folder.
 
     Returns:
-    A customdict object containing the parameters read from file.
+    A customdict object containing the parameters read from file, and a Logger.
     """
-    config = Configuration()
-    home = Path.home()
-    cwd = Path(getcwd())
-    params_path: str = str(cwd.joinpath(params_filename))
+    configuration = Configuration()
+    local_yaml = False
     home_yaml = False
     bad_yaml = False
+    no_yaml = False
 
     try:
+        cwd = Path(getcwd())
+        params_path: str = str(cwd.joinpath(params_filename))
         with open(params_path, 'r') as stream:
             try:
                 params_read = safe_load(stream)
-                config.add_dict(config, params_read)
+                configuration.add_dict(configuration, params_read)
+                local_yaml = True
             except YAMLError as exc:
-                print("YAML bad formatted. Ignored.")
                 bad_yaml = True
                 pass
-    except FileNotFoundError as fnfe:
+    except FileNotFoundError:
+        home = Path.home()
         params_path: str = str(home.joinpath(params_filename))
         try:
             with open(params_path, 'r') as stream:
                 try:
                     params_read = safe_load(stream)
-                    config.add_dict(config, params_read)
+                    configuration.add_dict(configuration, params_read)
                     home_yaml = True
                 except YAMLError as exc:
-                    print("YAML bad formatted. Ignored.")
                     bad_yaml = True
                     pass
-        except FileNotFoundError as fnfe:
-            print("No params.yaml parameters file. Taking defaults.")
+        except FileNotFoundError:
+            no_yaml = True
             pass
 
     #
     # Set log_level and start the logger
     #
-    if 'log_level' not in config:
-        config.log_level = 3  # default value = WARNING
-    config.log = Logger(config.log_level)
-    if bad_yaml:
-        config.log.warn('Bad formatted YAML!')
-    if home_yaml:
-        config.log.info("Home folder YAML file loaded")
-    else:
-        config.log.info("Local folder YAML file loaded")
+    if 'log_level' not in configuration:
+        configuration.log_level = 3  # default value = WARNING
 
-    return config
+    log = Logger(configuration.log_level)
+    if no_yaml:
+        log.warn(f"WARNING: No {params_filename} parameters file.")
+    if bad_yaml:
+        log.warn('Bad formatted YAML!')
+    if home_yaml:
+        log.info("Home folder YAML file loaded")
+    if local_yaml:
+        log.info("Local folder YAML file loaded")
+
+    return configuration, log
