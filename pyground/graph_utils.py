@@ -118,6 +118,19 @@ def print_graph_edges(graph: nx.Graph):
     mx = max([len(s) for s in list(graph.nodes)])
     edges = list(graph.edges)
     print(f'Graph contains {len(edges)} edges.')
-    for edge in graph.edges(data='weight'):
-        print(("{:" + str(mx) + "s} –– {:" + str(mx) + "s} {:+.4f}").format(
-            edge[0], edge[1], edge[2]))
+
+    # Check if this graph contain weight information
+    get_edges = getattr(graph, "edges", None)
+    if callable(get_edges):
+        edges_weights = get_edges(data='weight')
+    else:
+        edges_weights = edges
+
+    # Printout
+    for edge in edges_weights:
+        if len(edge) == 3:
+            print(("{:" + str(mx) + "s} –– {:" + str(mx) + "s} {:+.4f}").format(
+                edge[0], edge[1], edge[2]))
+        else:
+            print(("{:" + str(mx) + "s} –– {:" + str(mx) + "s}").format(
+                edge[0], edge[1]))
