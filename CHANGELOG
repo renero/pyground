@@ -1,3 +1,7 @@
+0.2.4
+-----
+    - graph_utils() added.
+
 0.2.3
 -----
     - "config()"" now returns the parameters and the logger in two separated
