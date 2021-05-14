@@ -34,7 +34,7 @@ def compute_graph_metrics(truth, result):
         raise TypeError("Truth argument must be a list or a set.")
     if not isinstance(result, set):
         target = set([tuple(pair) for pair in result])
-    elif isinstance(truth, set):
+    elif isinstance(result, set):
         target = result
     else:
         raise TypeError("Results argument must be a list or a set.")
