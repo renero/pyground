@@ -71,7 +71,6 @@ def print_progbar(percent: float, max: int = 20, do_print=True,
     :param **kwargs: optional arguments to the `print` method.
 
     Example
-    -------
 
     >>> print_progbar(0.65)
     >>> "[=============·······]"
