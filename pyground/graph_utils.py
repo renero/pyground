@@ -115,8 +115,8 @@ def print_graph_edges(graph: nx.Graph):
             b –– c +0.2000
 
     """
-    mx = max([len(s) for s in list(graph.nodes())])
-    edges = list(graph.edges())
+    mx = max([len(s) for s in list(graph.nodes)])
+    edges = list(graph.edges)
     print(f'Graph contains {len(edges)} edges.')
     for edge in graph.edges(data='weight'):
         print(("{:" + str(mx) + "s} –– {:" + str(mx) + "s} {:+.4f}").format(
