@@ -35,7 +35,7 @@ def setup_package():
           packages=find_packages(),
           url='https://github.com/renero/ground',
           package_data={'': ['**/*.data', '**/*.csv']},
-          install_requires=['numpy', 'pandas'],
+          install_requires=['numpy', 'pandas', 'prettytable'],
           include_package_data=True,
           author='J. Renero',
           author_email='hergestridge@gmail.com',
