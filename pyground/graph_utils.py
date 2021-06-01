@@ -5,6 +5,7 @@ from typing import List
 
 import networkx as nx
 import numpy as np
+import pydot as pydot
 from IPython.display import Image, display
 
 
@@ -152,10 +153,11 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     """
     G = nx.DiGraph()
     G.add_nodes_from(range(adjacency.shape[1]))
+    arrowhead = ["none", "odot", "normal"]
     for i, row in enumerate(adjacency):
         for j, value in enumerate(row):
-            if value == 2:
-                G.add_edge(i, j)
+            if value != 0:
+                G.add_edge(i, j, arrowhead=arrowhead[value])
 
     # Map the current column numbers to the letters used in toy dataset
     if node_labels is not None and len(node_labels) == adjacency.shape[1]:
@@ -175,5 +177,10 @@ def dot_graph(G: nx.DiGraph) -> None:
     # This is to display single arrows with two heads instead of two arrows with
     # one head towards each direction.
     dot_graph.set_concentrate(True)
-    plt = Image(dot_graph.create_png())
+    plot_dot(dot_graph)
+
+
+def plot_dot(pdot: pydot.Dot) -> None:
+    """ Displays a DOT object in the notebook """
+    plt = Image(pdot.create_png())
     display(plt)
