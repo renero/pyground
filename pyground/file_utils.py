@@ -71,7 +71,7 @@ def valid_output_name(filename: str, path: str, extension=None) -> str:
         specified, any extension is searched to avoid returning a filepath
         of an existing file, no matter what extension it has.
     """
-    path = file_exists(path, dirname(realpath(__file__)))
+    #path = file_exists(path, dirname(realpath(__file__)))
     if extension:
         base_filepath = join(path, filename) + '.{}'.format(extension)
     else:

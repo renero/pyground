@@ -14,3 +14,5 @@ setuptools~=56.1.0
 numpy
 pytest~=6.2.4
 PyYAML~=5.4.1
+networkx~=2.5.1
+ipython~=7.16.1

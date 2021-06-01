@@ -5,6 +5,7 @@ from typing import List
 
 import networkx as nx
 import numpy as np
+from IPython.display import Image, display
 
 
 def compute_graph_metrics(truth, result):
@@ -134,3 +135,45 @@ def print_graph_edges(graph: nx.Graph):
         else:
             print(("{:" + str(mx) + "s} –– {:" + str(mx) + "s}").format(
                 edge[0], edge[1]))
+
+
+def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
+    """
+    Manually parse the adj matrix to shape a dot graph
+
+    Args:
+        adjacency: a numpy adjacency matrix
+        node_labels: an array of same length as nr of columns in the adjacency
+        matrix containing the labels to use with every node.
+
+    Returns:
+         The Graph (DiGraph)
+
+    """
+    G = nx.DiGraph()
+    G.add_nodes_from(range(adjacency.shape[1]))
+    for i, row in enumerate(adjacency):
+        for j, value in enumerate(row):
+            if value == 2:
+                G.add_edge(i, j)
+
+    # Map the current column numbers to the letters used in toy dataset
+    if node_labels is not None and len(node_labels) == adjacency.shape[1]:
+        mapping = dict(zip(sorted(G), node_labels))
+        G = nx.relabel_nodes(G, mapping)
+
+    return G
+
+
+def dot_graph(G: nx.DiGraph) -> None:
+    """
+    Display a DOT of the graph in the notebook.
+    """
+    # Obtain the DOT version of the NX.DiGraph and visualize it.
+    dot_graph = nx.nx_pydot.to_pydot(G)
+
+    # This is to display single arrows with two heads instead of two arrows with
+    # one head towards each direction.
+    dot_graph.set_concentrate(True)
+    plt = Image(dot_graph.create_png())
+    display(plt)
