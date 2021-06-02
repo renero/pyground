@@ -6,6 +6,7 @@ from typing import List
 import networkx as nx
 import numpy as np
 import pydot as pydot
+import pydotplus
 from IPython.display import Image, display
 
 
@@ -167,6 +168,13 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     return G
 
 
+def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
+    """ Returns a NetworkX DiGraph from a DOT object. """
+    dotplus = pydotplus.graph_from_dot_data(dot_object.to_string())
+    dotplus.set_strict(True)
+    return nx.nx_pydot.from_pydot(dotplus)
+
+
 def dot_graph(G: nx.DiGraph) -> None:
     """
     Display a DOT of the graph in the notebook.
@@ -184,3 +192,48 @@ def plot_dot(pdot: pydot.Dot) -> None:
     """ Displays a DOT object in the notebook """
     plt = Image(pdot.create_png())
     display(plt)
+
+
+def plot_compared_graph(G: nx.DiGraph, H:nx.DiGraph) -> None:
+    """
+    Iterate over the composed graph's edges and nodes, and assign to these a
+    color depending on which graph they belong to (including both at the same
+    time too). This could also be extended to adding some attribute indicating
+    to which graph it belongs too.
+    Intersecting nodes and edges will have a magenta color. Otherwise they'll
+    be green or blue if they belong to the G or H Graph respectively
+    """
+    GH = nx.compose(G, H)
+    # set edge colors
+    edge_colors = dict()
+    for edge in GH.edges():
+        if G.has_edge(*edge):
+            if H.has_edge(*edge):
+                edge_colors[edge] = 'black'
+                continue
+            edge_colors[edge] = 'lightgreen'
+        elif H.has_edge(*edge):
+            edge_colors[edge] = 'lightblue'
+
+    # set node colors
+    G_nodes = set(G.nodes())
+    H_nodes = set(H.nodes())
+    node_colors = []
+    for node in GH.nodes():
+        if node in G_nodes:
+            if node in H_nodes:
+                node_colors.append('green')
+                continue
+            node_colors.append('lightgreen')
+        if node in H_nodes:
+            node_colors.append('lightblue')
+
+    pos = nx.circular_layout(GH, scale=20)
+    nx.draw(GH, pos,
+            nodelist=GH.nodes(),
+            node_color=node_colors,
+            edgelist=edge_colors.keys(),
+            edge_color=edge_colors.values(),
+            node_size=800,
+            width=2, alpha=0.5,
+            with_labels=True)
