@@ -194,6 +194,7 @@ def plot_dot(pdot: pydot.Dot) -> None:
     plt = Image(pdot.create_png())
     display(plt)
 
+
 def plot_graph(graph: nx.DiGraph) -> None:
     """Plot a graph using default Matplotlib methods"""
     pos = nx.circular_layout(graph, scale=20)
@@ -207,7 +208,27 @@ def plot_graph(graph: nx.DiGraph) -> None:
     plt.show()
 
 
-def plot_compared_graph(G: nx.DiGraph, H:nx.DiGraph) -> None:
+def plot_graphs(G: nx.MultiDiGraph, H: nx.DiGraph) -> None:
+    """Plot two graphs side by side."""
+    pos1 = nx.circular_layout(G, scale=20)
+    pos2 = nx.circular_layout(H, scale=20)
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+    ax = axes.flatten()
+    nx.draw_networkx(G, pos1, node_color="lightblue",
+                     node_size=800, edge_color='orange',
+                     width=2, alpha=0.9, ax=ax[0])
+    ax[0].set_axis_off()
+    ax[0].set_title("Ground Truth")
+    nx.draw_networkx(H, pos2, node_color="lightblue",
+                     node_size=800, edge_color='lightblue',
+                     width=2, alpha=0.9, ax=ax[1])
+    ax[1].set_axis_off()
+    ax[1].set_title("Other")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
     """
     Iterate over the composed graph's edges and nodes, and assign to these a
     color depending on which graph they belong to (including both at the same
