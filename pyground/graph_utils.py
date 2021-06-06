@@ -3,6 +3,7 @@ This module incorporates util functions for graphs.
 """
 from typing import List
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pydot as pydot
@@ -192,6 +193,18 @@ def plot_dot(pdot: pydot.Dot) -> None:
     """ Displays a DOT object in the notebook """
     plt = Image(pdot.create_png())
     display(plt)
+
+def plot_graph(graph: nx.DiGraph) -> None:
+    """Plot a graph using default Matplotlib methods"""
+    pos = nx.circular_layout(graph, scale=20)
+    nx.draw(graph, pos,
+            nodelist=graph.nodes(),
+            node_color="lightblue",
+            node_size=800,
+            width=2,
+            alpha=0.9,
+            with_labels=True)
+    plt.show()
 
 
 def plot_compared_graph(G: nx.DiGraph, H:nx.DiGraph) -> None:
