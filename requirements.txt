@@ -13,3 +13,7 @@ networkx~=2.5.1
 ipython~=7.16.1
 pyground~=0.2.5
 pydot~=1.4.2
+boto3~=1.17.89
+sagemaker~=2.45.0
+matplotlib~=3.3.4
+pydotplus~=2.0.2

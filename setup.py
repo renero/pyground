@@ -33,7 +33,7 @@ def setup_package():
           version=get_version("pyground/__init__.py"),
           description='Utils for python projects',
           packages=find_packages(),
-          url='https://github.com/renero/ground',
+          url='https://github.com/renero/pyground',
           package_data={'': ['**/*.data', '**/*.csv']},
           install_requires=['numpy', 'pandas', 'prettytable'],
           include_package_data=True,

@@ -4,9 +4,12 @@ import random as rand
 from random import randint, random
 from typing import List
 
+import boto3 as boto3
 import numpy as np
 import pandas as pd
+import sagemaker as sagemaker
 from prettytable import PrettyTable
+from sagemaker import get_execution_role
 from scipy.special import expit  # this is the sigmoid function
 from scipy.stats import norm, lognorm
 from sklearn.preprocessing import RobustScaler
@@ -289,3 +292,22 @@ def matprint(mat, labels):
             print("{:>+12.4f}".format(y),
                   end="  ")
         print("")
+
+
+def setup_sagemaker():
+    """
+    Setup the AWS environment, when running in SageMaker
+    """
+    sagemaker_session = sagemaker.Session()
+    bucket = sagemaker_session.default_bucket()
+
+    role = get_execution_role()
+    print(f'SageMaker Execution Role:{role}')
+
+    client = boto3.client('sts')
+    account = client.get_caller_identity()['Account']
+    print(f'AWS account:{account}')
+
+    session = boto3.session.Session()
+    region = session.region_name
+    print(f'AWS region:{region}')

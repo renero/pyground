@@ -87,7 +87,7 @@ def valid_output_name(filename: str, path: str, extension=None) -> str:
             output_filepath = join(path, filename + '_{}'.format(idx))
         idx += 1
 
-    print(f'output_filepath: {output_filepath}')
+    #print(f'output_filepath: {output_filepath}')
     return output_filepath
 
 
