@@ -279,7 +279,30 @@ def gen_toy_dataset(mu=0, sigma=1., s=0.25, sigma_z0=3.0, sigma_z1=5.,
     return dataset, true_structure
 
 
-def matprint(mat, labels):
+def matprint(mat: np.ndarray, labels: List[str]):
+    """
+    Pretty print an (adjcency) matrix, using same labels for columns and rows
+
+    Arguments:
+    ---------
+        - mat: A squared numpy array.
+        - labels: List of strings identifying columns/rows
+
+    Returns:
+    -------
+        None
+
+    Example:
+        >>> a = np.array([[1, 2, 3], [5, 6, 7], [9, 10, 11]])
+        >>> matprint(a, ['A','B','C'])
+
+                   A             B             C
+           -----------------------------------------
+        A       +1.0000       +2.0000       +3.0000
+        B       +5.0000       +6.0000       +7.0000
+        C       +9.0000      +10.0000      +11.0000
+
+    """
     max_label = max([len(lab) for lab in labels])
     print("  ")
     for i, lab in enumerate(labels):
