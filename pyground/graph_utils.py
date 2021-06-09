@@ -1,7 +1,6 @@
 """
 This module incorporates util functions for graphs.
 """
-from pathlib import Path
 from typing import List, Union
 
 import networkx as nx
@@ -172,6 +171,14 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     return G
 
 
+def graph_from_dot_file(dot_file: str) -> nx.DiGraph:
+    """ Returns a NetworkX DiGraph from a DOT FILE. """
+    dot_object = pydot.graph_from_dot_file(dot_file)
+    dotplus = pydotplus.graph_from_dot_data(dot_object[0].to_string())
+    dotplus.set_strict(True)
+    return nx.nx_pydot.from_pydot(dotplus)
+
+
 def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
     """ Returns a NetworkX DiGraph from a DOT object. """
     dotplus = pydotplus.graph_from_dot_data(dot_object.to_string())
@@ -179,13 +186,19 @@ def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
     return nx.nx_pydot.from_pydot(dotplus)
 
 
-def read_graph_fom_csv(output_path: str,
-                        graph_file: str,
-                        graph_type: Union[Graph, DiGraph]):
+def graph_fom_csv(graph_file: str,
+                  graph_type: Union[Graph, DiGraph]):
     """
     Read Graph from a CSV file with "FROM", "TO" and "WEIGHT" fields
+
+    Args:
+        graph_file: a full path with the filename
+        graph_type: Graph or DiGraph
+
+    Returns:
+        networkx.Graph or networkx.DiGraph
     """
-    edges = pd.read_csv(Path(output_path) / graph_file)
+    edges = pd.read_csv(graph_file)
     Graphtype = graph_type()
     ugraph = nx.from_pandas_edgelist(edges,
                                      source='from',
@@ -195,7 +208,7 @@ def read_graph_fom_csv(output_path: str,
     return ugraph
 
 
-def save_graph_to_csv(graph, output_file):
+def graph_to_csv(graph, output_file):
     """
     Save a GrAPH to CSV file with "FROM", "TO" and "CSV"
     """
