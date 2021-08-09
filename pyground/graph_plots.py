@@ -75,7 +75,7 @@ def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
                 continue
             edge_colors[edge] = 'lightgreen'
         elif H.has_edge(*edge):
-            edge_colors[edge] = 'lightblue'
+            edge_colors[edge] = 'orange'
 
     # set node colors
     G_nodes = set(G.nodes())
@@ -84,11 +84,11 @@ def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
     for node in GH.nodes():
         if node in G_nodes:
             if node in H_nodes:
-                node_colors.append('green')
+                node_colors.append('lightgrey')
                 continue
             node_colors.append('lightgreen')
         if node in H_nodes:
-            node_colors.append('lightblue')
+            node_colors.append('orange')
 
     pos = nx.circular_layout(GH, scale=20)
     nx.draw(GH, pos,

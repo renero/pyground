@@ -50,7 +50,7 @@ def compute_graph_metrics(truth, result):
         raise TypeError("Results argument must be a list or a set.")
 
     # Set the total number of edges if ground truth skeleton
-    total = float(len(ground_truth))
+    total = max([float(len(ground_truth)), float(len(target))])
     true_positives = len(ground_truth.intersection(target))
     false_positives = len(target - ground_truth.intersection(target))
     precision = 1. - (false_positives / total)
@@ -134,7 +134,7 @@ def print_graph_edges(graph: nx.Graph):
 
     # Printout
     for edge in edges_weights:
-        if len(edge) == 3:
+        if len(edge) == 3 and edge[2] is not None:
             print(("{:" + str(mx) + "s} –– {:" + str(mx) + "s} {:+.4f}").format(
                 edge[0], edge[1], edge[2]))
         else:
