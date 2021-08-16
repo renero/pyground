@@ -36,7 +36,7 @@ def setup_package():
           url='https://github.com/renero/pyground',
           package_data={'': ['**/*.data', '**/*.csv']},
           install_requires=['numpy', 'pandas', 'prettytable', 'argparse',
-            'joblib','sklearn','scipy','scikit','setuptools','pytest',
+            'joblib','scipy','scikit-learn','setuptools','pytest',
             'PyYAML','networkx','ipython','pyground','pydot','boto3',
             'sagemaker','matplotlib','pydotplus'],
           include_package_data=True,
