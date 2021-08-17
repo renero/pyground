@@ -198,6 +198,12 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     return G
 
 
+def graph_from_adjacency_file(file):
+    df = pd.read_csv(file)
+    labels = list(df)
+    return graph_from_adjacency(df.values, node_labels=labels)
+
+
 def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
     """
     A method to write the adjacency matrix of the graph to a file
@@ -234,8 +240,13 @@ def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
     return nx.nx_pydot.from_pydot(dotplus)
 
 
-def graph_fom_csv(graph_file: str,
-                  graph_type: Union[Graph, DiGraph]):
+def graph_fom_csv(
+    graph_file: str,
+    graph_type: Union[Graph, DiGraph],
+    source_label="from",
+    target_label="to",
+    edge_attr_label="weight",
+):
     """
     Read Graph from a CSV file with "FROM", "TO" and "WEIGHT" fields
 
@@ -248,11 +259,13 @@ def graph_fom_csv(graph_file: str,
     """
     edges = pd.read_csv(graph_file)
     Graphtype = graph_type()
-    ugraph = nx.from_pandas_edgelist(edges,
-                                     source='from',
-                                     target='to',
-                                     edge_attr='weight',
-                                     create_using=Graphtype)
+    ugraph = nx.from_pandas_edgelist(
+        edges,
+        source=source_label,
+        target=target_label,
+        edge_attr=edge_attr_label,
+        create_using=Graphtype,
+    )
     return ugraph
 
 
