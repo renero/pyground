@@ -4,6 +4,7 @@ This module incorporates util functions for graphs.
 from typing import List, Union
 
 import networkx as nx
+import numpy
 import numpy as np
 import pandas as pd
 import pydot as pydot
@@ -142,6 +143,29 @@ def print_graph_edges(graph: nx.Graph):
                 edge[0], edge[1]))
 
 
+def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
+    """
+    A method to generate the adjacency matrix of the graph. Labels are
+    sorted for better readability.
+
+    Args:
+        graph: (Union[Graph, DiGraph]) the graph to be converted.
+
+    Return:
+        graph: (numpy.ndarray) A 2d array containing the adjacency matrix of the graph
+    """
+    symbol_map = {"o": 1, ">": 2, "-": 3}
+    labels = sorted(list(graph.nodes))  # [node for node in self]
+    mat = np.zeros((len(labels), (len(labels))))
+    for x in labels:
+        for y in labels:
+            if graph.has_edge(x, y):
+                mat[labels.index(x)][labels.index(y)] = symbol_map[
+                    graph.get_edge_data(x, y)[y]
+                ]
+    return mat
+
+
 def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     """
     Manually parse the adj matrix to shape a dot graph
@@ -169,6 +193,28 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
         G = nx.relabel_nodes(G, mapping)
 
     return G
+
+
+def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
+    """
+    A method to write the adjacency matrix of the graph to a file
+
+    Args:
+        graph: (Union[Graph, DiGraph] the graph to be saved
+        output_file: (str) The full path where graph is to be saved
+    """
+    mat = graph_to_adjacency(graph)
+    labels = sorted(list(graph.nodes))
+    f = open(output_file, "w")
+    f.write(",".join([f"{label}" for label in labels]))
+    f.write("\n")
+    for i in range(len(labels)):
+        f.write(f"{labels[i]}")
+        f.write(",")
+        f.write(",".join([str(int(point)) for point in mat[i]]))
+        f.write("\n")
+    f.close()
+
 
 
 def graph_from_dot_file(dot_file: str) -> nx.DiGraph:
