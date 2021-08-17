@@ -160,9 +160,12 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
     for x in labels:
         for y in labels:
             if graph.has_edge(x, y):
-                mat[labels.index(x)][labels.index(y)] = symbol_map[
-                    graph.get_edge_data(x, y)[y]
-                ]
+                if bool(graph.get_edge_data(x, y)):
+                    mat[labels.index(x)][labels.index(y)] = symbol_map[
+                        graph.get_edge_data(x, y)[y]
+                    ]
+                else:
+                    mat[labels.index(x)][labels.index(y)] = 3
     return mat
 
 
@@ -214,7 +217,6 @@ def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
         f.write(",".join([str(int(point)) for point in mat[i]]))
         f.write("\n")
     f.close()
-
 
 
 def graph_from_dot_file(dot_file: str) -> nx.DiGraph:
