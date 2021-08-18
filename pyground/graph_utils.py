@@ -199,6 +199,12 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
 
 
 def graph_from_adjacency_file(file):
+    """
+    Read Adjacency matrix from a file and return a Graph
+
+    Args:
+        file: (str) the full path of the file to read
+    """
     df = pd.read_csv(file)
     labels = list(df)
     return graph_from_adjacency(df.values, node_labels=labels)
