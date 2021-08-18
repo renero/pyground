@@ -165,7 +165,7 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
                         graph.get_edge_data(x, y)[y]
                     ]
                 else:
-                    mat[labels.index(x)][labels.index(y)] = 3
+                    mat[labels.index(x)][labels.index(y)] = 1
     return mat
 
 
