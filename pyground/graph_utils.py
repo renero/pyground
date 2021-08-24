@@ -161,9 +161,12 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
         for y in labels:
             if graph.has_edge(x, y):
                 if bool(graph.get_edge_data(x, y)):
-                    mat[labels.index(x)][labels.index(y)] = symbol_map[
-                        graph.get_edge_data(x, y)[y]
-                    ]
+                    if y in graph.get_edge_data(x, y).keys():
+                        mat[labels.index(x)][labels.index(y)] = symbol_map[
+                            graph.get_edge_data(x, y)[y]
+                        ]
+                    else:
+                        mat[labels.index(x)][labels.index(y)] = 1
                 else:
                     mat[labels.index(x)][labels.index(y)] = 1
     return mat
