@@ -90,6 +90,32 @@ def valid_output_name(filename: str, path: str, extension=None) -> str:
     return output_filepath
 
 
+def change_extension_to(original_file: str, new_extension: str) -> str:
+    """
+    Given a filename, returns a new filename with the same basename but with a
+    different extension, specified in argument.
+
+    Args:
+          original_file: (str) the filename change extension
+          new_extension: (str) the new extension to be used with the filename
+                               Do not use dots in the new extension.
+
+    Returns:
+          str: the filename with the original extension replaced with the new
+    """
+    if "." in new_extension and new_extension.indes(".") == 0:
+        new_extension = new_extension[1:]
+    try:
+        pos = original_file.index('.')
+    except ValueError:
+        return original_file + "." + new_extension
+    if pos == original_file.rindex("."):
+        return original_file[:pos] + "." + new_extension
+    else:
+        pos = original_file.rindex(".")
+        return original_file[:pos] + "." + new_extension
+
+
 def save_dataframe(name: str,
                    df: DataFrame,
                    output_path: str,
