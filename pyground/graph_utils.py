@@ -152,7 +152,8 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
         graph: (Union[Graph, DiGraph]) the graph to be converted.
 
     Return:
-        graph: (numpy.ndarray) A 2d array containing the adjacency matrix of the graph
+        graph: (numpy.ndarray) A 2d array containing the adjacency matrix of
+            the graph
     """
     symbol_map = {"o": 1, ">": 2, "-": 3}
     labels = sorted(list(graph.nodes))  # [node for node in self]
@@ -166,7 +167,7 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
                             graph.get_edge_data(x, y)[y]
                         ]
                     else:
-                        mat[labels.index(x)][labels.index(y)] = 1
+                        mat[labels.index(x)][labels.index(y)] = graph.get_edge_data(x, y)['weight']
                 else:
                     mat[labels.index(x)][labels.index(y)] = 1
     return mat
@@ -190,8 +191,8 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     arrowhead = ["none", "odot", "normal"]
     for i, row in enumerate(adjacency):
         for j, value in enumerate(row):
-            if value != 0:
-                G.add_edge(i, j, arrowhead=arrowhead[value])
+            if not math.isclose(value, 0.):
+                G.add_edge(i, j, weight=value, arrowhead=arrowhead[value])
 
     # Map the current column numbers to the letters used in toy dataset
     if node_labels is not None and len(node_labels) == adjacency.shape[1]:
@@ -215,7 +216,8 @@ def graph_from_adjacency_file(file):
 
 def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
     """
-    A method to write the adjacency matrix of the graph to a file
+    A method to write the adjacency matrix of the graph to a file. If graph has
+    weights, these are the values stored in the adjacency matrix.
 
     Args:
         graph: (Union[Graph, DiGraph] the graph to be saved
