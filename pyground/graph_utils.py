@@ -3,6 +3,7 @@ This module incorporates util functions for graphs.
 """
 from typing import List, Union
 
+import math
 import networkx as nx
 import numpy
 import numpy as np
