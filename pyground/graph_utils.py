@@ -232,7 +232,7 @@ def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
     for i in range(len(labels)):
         f.write(f"{labels[i]}")
         f.write(",")
-        f.write(",".join([str(int(point)) for point in mat[i]]))
+        f.write(",".join([str(point) for point in mat[i]]))
         f.write("\n")
     f.close()
 
