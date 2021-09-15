@@ -4,7 +4,7 @@ import pydot
 from IPython.display import Image, display
 
 
-def dot_graph(G: nx.DiGraph) -> None:
+def dot_graph(G: nx.DiGraph, **kwargs) -> None:
     """
     Display a DOT of the graph in the notebook.
     """
@@ -17,9 +17,9 @@ def dot_graph(G: nx.DiGraph) -> None:
     plot_dot(dot_graph)
 
 
-def plot_dot(pdot: pydot.Dot) -> None:
+def plot_dot(pdot: pydot.Dot, **kwargs) -> None:
     """ Displays a DOT object in the notebook """
-    plt = Image(pdot.create_png())
+    plt = Image(pdot.create_png(), **kwargs)
     display(plt)
 
 
