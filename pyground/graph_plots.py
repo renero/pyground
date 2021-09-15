@@ -14,7 +14,7 @@ def dot_graph(G: nx.DiGraph, **kwargs) -> None:
     # This is to display single arrows with two heads instead of two arrows with
     # one head towards each direction.
     dot_graph.set_concentrate(True)
-    plot_dot(dot_graph)
+    plot_dot(dot_graph, **kwargs)
 
 
 def plot_dot(pdot: pydot.Dot, **kwargs) -> None:
