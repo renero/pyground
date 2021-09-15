@@ -192,11 +192,8 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None, th=None) -> nx
     arrowhead = ["none", "odot", "normal"]
     for i, row in enumerate(adjacency):
         for j, value in enumerate(row):
-            if th is not None:
-                if value > th:
-                    G.add_edge(i, j, weight=value, arrowhead='normal')
-                elif value != 0.0:
-                    G.add_edge(i, j, weight=value, arrowhead='normal')
+            if value > th:
+                G.add_edge(i, j, weight=value, arrowhead='normal')
     # Map the current column numbers to the letters used in toy dataset
     if node_labels is not None and len(node_labels) == adjacency.shape[1]:
         mapping = dict(zip(sorted(G), node_labels))
