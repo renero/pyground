@@ -1,9 +1,8 @@
 """
 This module incorporates util functions for graphs.
 """
-from typing import List, Union
+from typing import List, Union, Tuple
 
-import math
 import networkx as nx
 import numpy
 import numpy as np
@@ -168,35 +167,36 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
                             graph.get_edge_data(x, y)[y]
                         ]
                     else:
-                        mat[labels.index(x)][labels.index(y)] = graph.get_edge_data(x, y)['weight']
+                        mat[labels.index(x)][labels.index(y)] = \
+                        graph.get_edge_data(x, y)['weight']
                 else:
                     mat[labels.index(x)][labels.index(y)] = 1
     return mat
 
 
-def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
+def graph_from_adjacency(adjacency: np.ndarray, node_labels=None, th=None) -> nx.DiGraph:
     """
     Manually parse the adj matrix to shape a dot graph
 
     Args:
         adjacency: a numpy adjacency matrix
         node_labels: an array of same length as nr of columns in the adjacency
-        matrix containing the labels to use with every node.
+            matrix containing the labels to use with every node.
+        th: (float) weight threshold to be considered a valid edge.
 
     Returns:
          The Graph (DiGraph)
-
     """
     G = nx.DiGraph()
     G.add_nodes_from(range(adjacency.shape[1]))
     arrowhead = ["none", "odot", "normal"]
     for i, row in enumerate(adjacency):
         for j, value in enumerate(row):
-            if not math.isclose(value, 0.):
-                G.add_edge(i, j, weight=value, arrowhead='odot')
-            elif math.isclose(value, 2.):
-                G.add_edge(i, j, weight=value, arrowhead='normal')
-
+            if th is not None:
+                if value > th:
+                    G.add_edge(i, j, weight=value, arrowhead='normal')
+                elif value != 0.0:
+                    G.add_edge(i, j, weight=value, arrowhead='normal')
     # Map the current column numbers to the letters used in toy dataset
     if node_labels is not None and len(node_labels) == adjacency.shape[1]:
         mapping = dict(zip(sorted(G), node_labels))
@@ -205,16 +205,21 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None) -> nx.DiGraph:
     return G
 
 
-def graph_from_adjacency_file(file):
+def graph_from_adjacency_file(file:str, th=0.0) -> Tuple[nx.DiGraph, pd.DataFrame]:
     """
     Read Adjacency matrix from a file and return a Graph
 
     Args:
         file: (str) the full path of the file to read
+        th: (float) weight threshold to be considered a valid edge.
+    Returns:
+        DiGraph, DataFrame
     """
-    df = pd.read_csv(file)
+    df = pd.read_csv(file, dtype="str")
+    df = df.astype("float64")
     labels = list(df)
-    return graph_from_adjacency(df.values, node_labels=labels)
+    G = graph_from_adjacency(df.values, node_labels=labels, th=th)
+    return G, df
 
 
 def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
@@ -255,11 +260,11 @@ def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
 
 
 def graph_fom_csv(
-    graph_file: str,
-    graph_type: Union[Graph, DiGraph],
-    source_label="from",
-    target_label="to",
-    edge_attr_label="weight",
+        graph_file: str,
+        graph_type: Union[Graph, DiGraph],
+        source_label="from",
+        target_label="to",
+        edge_attr_label="weight",
 ):
     """
     Read Graph from a CSV file with "FROM", "TO" and "WEIGHT" fields
