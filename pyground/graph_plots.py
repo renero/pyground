@@ -4,23 +4,24 @@ import pydot
 from IPython.display import Image, display
 
 
-def dot_graph(G: nx.DiGraph, **kwargs) -> None:
+def dot_graph(G: nx.DiGraph, undirected=False, **kwargs) -> None:
     """
     Display a DOT of the graph in the notebook.
     """
     # Obtain the DOT version of the NX.DiGraph and visualize it.
-    dot_graph = nx.nx_pydot.to_pydot(G)
+    G = G.to_undirected() if undirected else G
+    dot_object = nx.nx_pydot.to_pydot(G)
 
     # This is to display single arrows with two heads instead of two arrows with
     # one head towards each direction.
-    dot_graph.set_concentrate(True)
-    plot_dot(dot_graph, **kwargs)
+    dot_object.set_concentrate(True)
+    plot_dot(dot_object, **kwargs)
 
 
-def plot_dot(pdot: pydot.Dot, **kwargs) -> None:
+def plot_dot(dot_object: pydot.Dot, **kwargs) -> None:
     """ Displays a DOT object in the notebook """
-    plt = Image(pdot.create_png(), **kwargs)
-    display(plt)
+    image = Image(dot_object.create_png(), **kwargs)
+    display(image)
 
 
 def plot_graph(graph: nx.DiGraph) -> None:
