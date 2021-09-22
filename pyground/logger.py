@@ -17,13 +17,13 @@ def who(n):
     depth = n + 1
     if (n + 1) > max_stack_len:
         depth = n
+    calling_function = sys._getframe(depth).f_code.co_name
     if 'self' not in sys._getframe(depth).f_locals:
         class_name = 'NA'
+        return calling_function
     else:
         class_name = sys._getframe(depth).f_locals["self"].__class__.__name__
-    calling_function = sys._getframe(depth).f_code.co_name
-
-    return '{}:{}'.format(class_name, calling_function)
+        return '{}:{}'.format(class_name, calling_function)
 
 
 class Logger:
@@ -44,49 +44,45 @@ class Logger:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-    LINEWIDTH = 33
-
     _level = 3
 
     def __init__(self, level=0):
         self._level = level
         if self._level > 3:
-            print('Log level:', self._level)
+            print('Log level:', self._level, flush=True)
 
     def set_level(self, level):
         self._level = level
         self.info('Setting new log level to: {}'.format(level))
 
+    @staticmethod
+    def now():
+        return '{date:%Y-%m-%d %H:%M:%S}'.format(date=datetime.datetime.now())
+
+    def default_formatter(self, color, what, letter='', **kwargs):
+        print('{}[{} {}] {}{} [@{}]'.format(
+            color, letter, self.now(), what, self.ENDC, who(2), **kwargs))
+        sys.stdout.flush()
+
     def debug(self, what, **kwargs):
         if self._level < self._DEBUG:
             return
-        when = '{date:%Y-%m-%d %H:%M:%S}'.format(date=datetime.datetime.now())
-        print('{} - {}DEBUG - {:<33} - {}{}'.format(
-            when, self.OKBLUE, who(1), what, self.ENDC, **kwargs))
-        sys.stdout.flush()
+        self.default_formatter(self.INFOGREY, what, 'D', **kwargs)
 
-    def highlight(self, what):
-        now = '{date:%Y-%m-%d %H:%M:%S}'.format(date=datetime.datetime.now())
-        print('{} - INFO  - {:<33} - {}{}{}'.format(
-            now,
-            who(1),
-            self.INFOGREY, what, self.ENDC))
+    def highlight(self, what, **kwargs):
+        self.default_formatter(self.OKBLUE, what, 'i', **kwargs)
 
     def info(self, what, **kwargs):
         if self._level < self._INFO:
             return
-        when = '{date:%Y-%m-%d %H:%M:%S}'.format(date=datetime.datetime.now())
-        print('{} - INFO  - {:<33} - {}'.format(
-            when, who(1), what, **kwargs))
+        self.default_formatter(self.OKGREEN, what, 'I', **kwargs)
 
     def warn(self, what, **kwargs):
         if self._level < self._WARN:
             return
-        when = '{date:%Y-%m-%d %H:%M:%S}'.format(date=datetime.datetime.now())
-        print('{} - {}WARN  - {:<33} - {}{}'.format(
-            when, self.WARNING, who(1), what, self.ENDC, **kwargs))
+        self.default_formatter(self.WARNING, what, 'W', **kwargs)
 
-    def error(self, what):
+    def error(self, what, **kwargs):
         if self._level < self._ERROR:
             return
-        print('{}ERROR: {}{}'.format(self.FAIL, what, self.ENDC))
+        self.default_formatter(self.FAIL, what, 'E', **kwargs)
