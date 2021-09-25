@@ -40,7 +40,7 @@ class Logger:
     INFOGREY = '\033[30m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
-    ENDC = '\033[0m'
+    nocolor = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
@@ -60,8 +60,8 @@ class Logger:
         return '{date:%Y-%m-%d %H:%M:%S}'.format(date=datetime.datetime.now())
 
     def default_formatter(self, color, what, letter='', **kwargs):
-        print('{}[{} {}] {}{} [@{}]'.format(
-            color, letter, self.now(), what, self.ENDC, who(2), **kwargs))
+        print('[{} {}] {}{}{} [@{}]'.format(
+            letter, self.now(), color, what, self.nocolor, who(2), **kwargs))
         sys.stdout.flush()
 
     def debug(self, what, **kwargs):

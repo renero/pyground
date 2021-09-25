@@ -83,15 +83,20 @@ class Configuration(defaultdict):
                 this_object.add_dict(new_object, param_dictionary[param_name])
 
 
-def config(params_filename='.pyground.yaml') -> (Configuration, Logger):
+def config(params_filename=".pyground.yaml", log_level=None) -> \
+        (Configuration, Logger):
     """
     Read the parameters from a filename, and returns a dictionary (default)
     and a basic logger.
 
     Args:
-    - params_filename: the name of the YAML file you want to use as source
+    params_filename: the name of the YAML file you want to use as source
         of parameters. If none specified, a file called ".pyground.yaml" is
         searched for in local directory first, and then in home folder.
+    log_level: an integer between 0 (silent) and 4 (debug=totally verbose)
+        specifying the logging level. This parameter is overriden by the value
+        in the YAML configuration file. Default value if not specified is
+        3 = WARNING.
 
     Returns:
     A customdict object containing the parameters read from file, and a Logger.
@@ -110,7 +115,7 @@ def config(params_filename='.pyground.yaml') -> (Configuration, Logger):
                 params_read = safe_load(stream)
                 configuration.add_dict(configuration, params_read)
                 local_yaml = True
-            except YAMLError as exc:
+            except YAMLError:
                 bad_yaml = True
                 pass
     except FileNotFoundError:
@@ -122,7 +127,7 @@ def config(params_filename='.pyground.yaml') -> (Configuration, Logger):
                     params_read = safe_load(stream)
                     configuration.add_dict(configuration, params_read)
                     home_yaml = True
-                except YAMLError as exc:
+                except YAMLError:
                     bad_yaml = True
                     pass
         except FileNotFoundError:
@@ -133,7 +138,10 @@ def config(params_filename='.pyground.yaml') -> (Configuration, Logger):
     # Set log_level and start the logger
     #
     if 'log_level' not in configuration:
-        configuration.log_level = 3  # default value = WARNING
+        if log_level is not None:
+            configuration.log_level = log_level  # as specified
+        else:
+            configuration.log_level = 3  # default value = WARNING
 
     log = Logger(configuration.log_level)
     if no_yaml:
