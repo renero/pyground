@@ -82,11 +82,12 @@ def plot_distribution(values: np.ndarray, percentile=None, **kwargs):
     ax3 = fig.add_subplot(gs[1, :])
     x, y = range(len(values)), sorted(values)
     ax3.plot(x, y)
-    ax3.set_title(f"{percentile * 100:.0f}% of total sum (>{th:.2f})")
     if percentile is not None:
+        ax3.set_title(f"{percentile * 100:.0f}% of total sum (>{th:.2f})")
         ax3.axvline(pos, linewidth=.5, c='red', linestyle='dashed')
         ax3.fill_between(x, min(y), y, where=x >= pos, alpha=0.2)
-
+    else:
+        ax3.set_title("Ordered values")
     fig.align_labels()
     plt.tight_layout()
     plt.show()
