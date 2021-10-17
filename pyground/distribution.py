@@ -65,7 +65,8 @@ def plot_distribution(values: np.ndarray, percentile=None, **kwargs):
     verbose = kwargs.get('verbose', False)
     th, pos = None, None
     if percentile is not None:
-        th, pos = values_threshold(values, verbose=verbose)
+        th, pos = values_threshold(values, percentile=percentile,
+                                   verbose=verbose)
 
     fig = plt.figure(tight_layout=True, figsize=(8, 6))
     gs = gridspec.GridSpec(2, 2)
