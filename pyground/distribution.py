@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt, gridspec
 import seaborn as sns
 import warnings
 
-from scipy.stats import stats
+import scipy.stats as stats
 
 
 def values_threshold(values, percentile=0.8, verbose=False):
