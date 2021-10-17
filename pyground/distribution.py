@@ -138,5 +138,7 @@ def analyze_distribution(values, percentile=None, **kwargs):
             d['p_value'] = p
             d['dist'] = dist
             d['params'] = param
-
+    if verbose:
+        print(
+            f"Best fitting distribution (p_val:{d['p_value']:.2f}): {d['name']}")
     return d
