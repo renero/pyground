@@ -123,7 +123,10 @@ def analyze_distribution(values, percentile=None, **kwargs):
     if plot is True:
         d['threshold'], _ = plot_distribution(values, percentile,
                                               verbose=verbose)
-        d['percentile'] = percentile
+    else:
+        d['threshold'], _ = values_threshold(values, percentile,
+                                             verbose=verbose)
+    d['percentile'] = percentile
 
     dist_names = ["norm", "exponweib", "weibull_max", "weibull_min", "pareto",
                   "genextreme"]
