@@ -8,8 +8,9 @@ import scipy.stats as stats
 
 def values_threshold(values, percentile=0.8, verbose=False):
     """
-    Computes the value from which the accumulated sum of values represent
-    the percentage passed as argument. The value is computed sorting the values in
+    Computes the value from which either: the accumulated sum of values represent
+    the percentage passed as argument (<1), or the number of values in the lower range
+    equals the value passed (>1). The value is computed sorting the values in
     descending order, so the this metric determines what are the most important values.
 
     Parameters:
@@ -29,19 +30,26 @@ def values_threshold(values, percentile=0.8, verbose=False):
     if verbose:
         print(f"Values shape: {values.shape[0]}")
         print(f"Sum values: {sum_values:.2f}")
-        print(
-            f"Sum@Percentile({percentile:.2f}): {sum_values * percentile:.2f}")
+        if percentile < 1.0:
+            print(
+                f"Sum@Percentile({percentile:.2f}): {sum_values * percentile:.2f}")
     cumsum = np.cumsum(sorted(values, reverse=True))
     # Substract because cumsum is reversed
-    pos_q = values.shape[0] - np.where(cumsum < (sum_values * percentile))[
-        0].max()
+    if percentile < 1.0:
+        pos_q = values.shape[0] - np.where(cumsum < (sum_values * percentile))[
+            0].max()
+    else:
+        pos_q = float(percentile)
     if pos_q == values.shape[0]:
         pos_q -= 1
     if verbose:
-        print(f"Position @ percentile {percentile:.2f} in cum.sum: {pos_q}")
-    threshold = sorted(values)[pos_q]
+        if percentile < 1.0:
+            print(f"Position @ percentile {percentile:.2f} in cum.sum: {pos_q}")
+        else:
+            print(f"Position in values: {int(pos_q)}")
+    threshold = sorted(values)[int(pos_q)]
     if verbose:
-        print(f"Threshold (under perc.{percentile:.2f}): {threshold:.2f}")
+        print(f"Threshold @ p. {percentile:.2f}): {threshold:.2f}")
     return threshold, pos_q
 
 
@@ -53,7 +61,8 @@ def plot_distribution(values: np.ndarray, percentile=None, **kwargs):
 
     Parameters:
         - values (np.array): list of values (1D).
-        - percentile (float): The percentage of the total sum of the values.
+        - percentile (float): The percentage of the total sum of the values, or the
+            position in the CDF from which to consider the values to extract.
         - verbose(bool): Verbosity
 
     Return:
@@ -79,15 +88,36 @@ def plot_distribution(values: np.ndarray, percentile=None, **kwargs):
     sns.kdeplot(values, ax=ax2, bw_adjust=0.5)
     ax2.set_title("Density of weights")
 
-    ax3 = fig.add_subplot(gs[1, :])
-    x, y = range(len(values)), sorted(values)
+    ax3 = fig.add_subplot(gs[1, 0])
+    x, y = np.arange(len(values)), np.sort(values)
     ax3.plot(x, y)
     if percentile is not None:
-        ax3.set_title(f"{percentile * 100:.0f}% of total sum (>{th:.2f})")
+        if percentile < 1.0:
+            ax3.set_title(f"{percentile * 100:.0f}% of total sum (>{th:.2f})")
+        else:
+            cdf = (y[int(pos):].sum() / y.sum()) * 100.0
+            ax3.set_title(f"Pos.{int(pos)} (th. > {th:.2f}) = {cdf:.0f}%")
         ax3.axvline(pos, linewidth=.5, c='red', linestyle='dashed')
         ax3.fill_between(x, min(y), y, where=x >= pos, alpha=0.2)
     else:
         ax3.set_title("Ordered values")
+
+    ax4 = fig.add_subplot(gs[1, 1])
+    xe = np.sort(values)
+    ye = np.arange(1, len(xe) + 1) / float(len(xe))
+    cdf = ye[np.max(np.where(xe < th))] * 100.0
+    ax4.plot(xe, ye)
+    if percentile is not None:
+        if percentile < 1.:
+            ax4.set_title(
+                f"ECDF {percentile * 100:.0f}% (th.> {th:.2f}) = {cdf:.0f}%")
+        else:
+            ax4.set_title(f"Pos.{int(pos)} of ECDF (th.>{th:.2f}) = {cdf:.0f}%")
+        ax4.fill_between(xe, min(ye), ye, where=xe >= th, alpha=0.2)
+        ax4.axvline(th, linewidth=.5, c='red', linestyle='dashed')
+    else:
+        ax4.set_title("ECDF")
+
     fig.align_labels()
     plt.tight_layout()
     plt.show()
