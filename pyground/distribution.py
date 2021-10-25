@@ -105,9 +105,9 @@ def plot_distribution(values: np.ndarray, percentile=None, **kwargs):
     ax4 = fig.add_subplot(gs[1, 1])
     xe = np.sort(values)
     ye = np.arange(1, len(xe) + 1) / float(len(xe))
-    cdf = ye[np.max(np.where(xe < th))] * 100.0
     ax4.plot(xe, ye)
     if percentile is not None:
+        cdf = ye[np.max(np.where(xe < th))] * 100.0
         if percentile < 1.:
             ax4.set_title(
                 f"ECDF {percentile * 100:.0f}% (th.> {th:.2f}) = {cdf:.0f}%")
