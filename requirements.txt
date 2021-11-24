@@ -16,7 +16,6 @@ boto3~=1.17.89
 sagemaker~=2.45.0
 matplotlib~=3.3.4
 pydotplus~=2.0.2
-
-
 sklearn~=0.0
 seaborn~=0.11.1
+ipywidgets~=7.6.5
