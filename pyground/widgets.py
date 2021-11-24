@@ -1,5 +1,5 @@
 import ipywidgets as widgets
-from IPython.display import display, Markdown, Latex
+from IPython.display import display, Markdown
 from pathlib import Path
 from pyground.file_utils import file_exists
 from typing import List
@@ -31,7 +31,7 @@ def multiple_select_filenames(names: List[str], path: str, mask: str = "{}"):
     for label in names:
         filename = mask.format(label)
         filename = str(Path(path, filename))
-        if file_exists(filename, p.output_path):
+        if file_exists(filename, path):
             existing_filenames[label] = filename
         else:
             existing_filenames[label] = None
