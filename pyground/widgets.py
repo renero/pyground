@@ -5,6 +5,33 @@ from pyground.file_utils import file_exists
 from typing import List
 
 
+def multiple_select_items(names: List[str]):
+    """
+    Displays checkboxes for those filenames built from the path + mask([names])
+    These names correspond to filenames, and they are marked if they don't exist.
+
+    Example
+        >>> names = ['sachs', 'sachs_long', 'toy', 'insurance']
+        >>> checkboxes = multiple_select_items(names)
+        ...
+        >>> to_reprocess = items_selected(checkboxes)
+
+    Args:
+        names (list): list of names
+
+    Returns:
+        widgets.Checkbox
+
+    """
+    display(Markdown('What items to select?'))
+    checkboxes = [
+        widgets.Checkbox(value=False, description=label)
+        for label in names]
+    output = widgets.VBox(children=checkboxes)
+    display(output)
+    return checkboxes
+
+
 def multiple_select_filenames(names: List[str], path: str, mask: str = "{}"):
     """
     Displays checkboxes for those filenames built from the path + mask([names])
