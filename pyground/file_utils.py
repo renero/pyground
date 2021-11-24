@@ -2,7 +2,9 @@ import errno
 import glob
 import json
 import os
+import pickle
 from os.path import dirname, realpath, join
+from pathlib import Path
 
 import joblib
 import pandas as pd
@@ -223,3 +225,50 @@ def read_json(filename):
         return data
     else:
         return None
+
+
+def save_experiment(obj_name: str, folder: str, results: dict):
+    """
+    Creates a folder for the experiment and saves results. Results is a
+    dictionary that will be saved as an opaque pickle. When the experiment will
+    require to be loaded, the only parameter needed are the folder name.
+
+    Args:
+        obj_name (str): the name to be given to the pickle file to be saved. If
+            a file already exists with that name, a file with same name and a
+            extension will be generated.
+        folder (str): a full path to the folder where the experiment is to be saved.
+            If the folder does not exist it will be created.
+        results (obj): the object to be saved as experiment. This is typically a
+            dictionary with different items representing different parts of the
+            experiment.
+    """
+    if not os.path.exists(folder):
+        Path(folder).mkdir(parents=False, exist_ok=True)
+    output = valid_output_name(obj_name, folder, extension="pickle")
+    with open(output, 'wb') as handle:
+        pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_experiment(obj_name: str, folder: str):
+    """
+    Loads a pickle from a given folder name. It is not necessary to add the "pickle"
+    extension to the experiment name.
+
+    Args:
+        obj_name (str): The name of the object saved in pickle format that is to be
+            loaded.
+        folder (str): A full path where looking for the experiment object.
+
+    Returns:
+        An obj loaded from a pickle file.
+    """
+    if Path(obj_name).suffix == "" or Path(obj_name).suffix != "pickle":
+        ext = ".pickle"
+    else:
+        ext = ''
+
+    experiment = f"{str(Path(folder, obj_name))}{ext}"
+    with open(experiment, 'rb') as h:
+        print("Pickle loaded")
+        return pickle.load(h)
