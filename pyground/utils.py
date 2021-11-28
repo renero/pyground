@@ -1,6 +1,7 @@
 # os.environ['PYTHONHASHSEED'] = '0'
 
 import random as rand
+from collections import defaultdict
 from random import randint, random
 from typing import List
 
@@ -13,6 +14,51 @@ from sagemaker import get_execution_role
 from scipy.special import expit  # this is the sigmoid function
 from scipy.stats import norm, lognorm
 from sklearn.preprocessing import RobustScaler
+
+
+class betterdict(defaultdict):
+    """
+    A dictionary that behaves as a defaultdict, where the string representation is
+    a table with clearer output, and references to keys can be done using "dot"
+    notation instead the more verbose using brackets and quotes.
+    """
+    def __init__(self, *args):
+        # https://stackoverflow.com/a/45411093/892904
+        if args:
+            super(betterdict, self).__init__(*args)
+        else:
+            super(betterdict, self).__init__(int)
+
+    def __getattr__(self, key):
+        """
+        Check out https://stackoverflow.com/a/42272450
+        """
+        if key in self:
+            return self.get(key)
+        raise AttributeError("Key <{}> not present in dictionary".format(key))
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def __str__(self):
+        t = PrettyTable()
+        t.field_names = ["Parameter", "Value"]
+        for header in t.field_names:
+            t.align[header] = "l"
+
+        def tabulate_dictionary(
+            t: PrettyTable, d: dict, name: str = None
+        ) -> PrettyTable:
+            for item in d.items():
+                if isinstance(item[1], dict):
+                    t = tabulate_dictionary(t, item[1], item[0])
+                    continue
+                sep = "." if name is not None else ""
+                prefix = "" if name is None else name
+                t.add_row([f"{prefix}{sep}{item[0]}", item[1]])
+            return t
+
+        return str(tabulate_dictionary(t, self))
 
 
 def letter_in_string(string, letter):

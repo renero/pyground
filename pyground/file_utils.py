@@ -270,5 +270,4 @@ def load_experiment(obj_name: str, folder: str):
 
     experiment = f"{str(Path(folder, obj_name))}{ext}"
     with open(experiment, 'rb') as h:
-        print("Pickle loaded")
         return pickle.load(h)
