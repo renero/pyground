@@ -2,22 +2,23 @@ import ipywidgets as widgets
 from IPython.display import display, Markdown
 from pathlib import Path
 from pyground.file_utils import file_exists
-from typing import List
+from typing import List, Dict
 
 
-def multiple_select_items(names: List[str]):
+def multiple_select_items(options: Dict[str, bool]):
     """
-    Displays checkboxes for those filenames built from the path + mask([names])
-    These names correspond to filenames, and they are marked if they don't exist.
+    Displays checkboxes for those items in the `options` arg. If the value of the
+    keys are true, then they appear marked as default.
 
     Example
-        >>> names = ['sachs', 'sachs_long', 'toy', 'insurance']
-        >>> checkboxes = multiple_select_items(names)
+        >>> options = {'sachs':True, 'sachs_long':False, 'toy':False, 'insurance':False}
+        >>> checkboxes = multiple_select_items(options)
         ...
         >>> to_reprocess = items_selected(checkboxes)
 
     Args:
-        names (list): list of names
+        options (dict(str, bool)): dict of options and whether they should appear
+            marked or not.
 
     Returns:
         widgets.Checkbox
@@ -25,48 +26,8 @@ def multiple_select_items(names: List[str]):
     """
     display(Markdown('What items to select?'))
     checkboxes = [
-        widgets.Checkbox(value=False, description=label)
-        for label in names]
-    output = widgets.VBox(children=checkboxes)
-    display(output)
-    return checkboxes
-
-
-def multiple_select_filenames(names: List[str], path: str, mask: str = "{}"):
-    """
-    Displays checkboxes for those filenames built from the path + mask([names])
-    These names correspond to filenames, and they are marked if they don't exist.
-
-    Example
-        >>> names = ['sachs', 'sachs_long', 'toy', 'insurance']
-        >>> path = '/tmp'
-        >>> checkboxes = multiple_select_filenames(names, path, "pref_{}.csv")
-        ...
-        >>> to_reprocess = items_selected(checkboxes)
-
-    Args:
-        names (list): list of names
-        path (str): The path where looking for the filenames
-        mask (str): The mask to be used to build the filenames. This is usually a
-            prefix, suffix or something more elaborated.
-
-    Returns:
-        widgets.Checkbox
-
-    """
-    existing_filenames = dict()
-    for label in names:
-        filename = mask.format(label)
-        filename = str(Path(path, filename))
-        if file_exists(filename, path):
-            existing_filenames[label] = filename
-        else:
-            existing_filenames[label] = None
-
-    display(Markdown('What models to fit?<br>Those selected will be loaded from disk.'))
-    checkboxes = [
-        widgets.Checkbox(value=existing_filenames[label] == None, description=label)
-        for label in names]
+        widgets.Checkbox(value=options[label], description=label) for label in options
+    ]
     output = widgets.VBox(children=checkboxes)
     display(output)
     return checkboxes
