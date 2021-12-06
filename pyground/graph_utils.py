@@ -294,3 +294,42 @@ def graph_to_csv(graph, output_file):
     skeleton = pd.DataFrame(list(graph.edges(data='weight')))
     skeleton.columns = ['from', 'to', 'weight']
     skeleton.to_csv(output_file, index=False)
+
+
+def graph_weights(graph, field="weight"):
+    """
+    Returns graph weights, or the name of the data field for each edge in the graph.
+
+    Args:
+        graph (Graph or DiGraph): the graph from wich to extract the field values
+        field (str): The name of the field for which to extract the values. By
+            default it is 'weight'.
+
+    Returns:
+        Numpy.array with the values of the specified field.
+    """
+    return np.array([
+        data[field] if field in graph[s][t] else 0.0
+        for s, t, data in graph.edges(data=True)
+    ])
+
+
+def filter_graph(graph, threshold, field='weight'):
+    """
+    Filter a graph taking only those edges whose weight is > threshold
+
+    Args:
+        graph: The graph to be filtered
+        threshold: The minimum value to act as filter for edges weight
+        field (str): The name of the weight to use as filter. Default is weight.
+
+    Returns:
+        A graph (same type as original) with only the edges filtered.
+    """
+    GType = type(graph)
+    ng = GType()
+    ng.add_nodes_from(graph)
+    for u, v, d in graph.edges(data=True):
+        if d[field] > threshold:
+            ng.add_edge(u, v, weight=d[field])
+    return ng
