@@ -314,7 +314,7 @@ def graph_weights(graph, field="weight"):
     ])
 
 
-def filter_graph(graph, threshold, field='weight'):
+def graph_filter(graph, threshold, field='weight'):
     """
     Filter a graph taking only those edges whose weight is > threshold
 
