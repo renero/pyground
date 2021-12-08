@@ -26,39 +26,42 @@ def plot_distribution(values: np.ndarray, perc=None, perc_pos=0, th=None, **kwar
             the position in the sorted list of values where that threshold is
             located.
     """
-    verbose = kwargs.get("verbose", False)
-    fig = plt.figure(tight_layout=True, figsize=(8, 6))
-    gs = gridspec.GridSpec(2, 2)
+    compact = kwargs.get("compact", False)
+    fsize = (11, 2) if compact else (8, 6)
+
+    fig = plt.figure(tight_layout=True, figsize=fsize)
+    gs = gridspec.GridSpec(1, 4) if compact else gridspec.GridSpec(2, 2)
 
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.hist(values, edgecolor="white", alpha=0.5, bins=25)
-    ax1.set_title(f"Histogram (threshold={th:.2g})", fontsize=10)
+    ax1.set_title(f"Histogram (threshold={th:.2g})", fontsize=9)
 
     ax2 = fig.add_subplot(gs[0, 1])
     sns.kdeplot(values, ax=ax2, bw_adjust=0.5)
-    ax2.set_title(f"Density (threshold={th:.2g})", fontsize=10)
+    ax2.set_title(f"Density (threshold={th:.2g})", fontsize=9)
+    ax2.set(ylabel=None)
 
     if th > 0.0:
         ax1.axvline(th, linewidth=0.5, c="red", linestyle="dashed")
         ax2.axvline(th, linewidth=0.5, c="red", linestyle="dashed")
 
-    ax3 = fig.add_subplot(gs[1, 0])
+    ax3 = fig.add_subplot(gs[0, 2]) if compact else fig.add_subplot(gs[1, 0])
     x, y = np.arange(len(values)), np.sort(values)
     ax3.plot(x, y)
     if perc is not None:
         if perc < 1.0:
-            ax3.set_title(f"{perc * 100:.0f}% of rev.cum.sum (>{th:.2f})", fontsize=10)
+            ax3.set_title(f"{perc * 100:.0f}% of rev.cum.sum (>{th:.2f})", fontsize=9)
         else:
             cdf = (y[int(perc_pos) :].sum() / y.sum()) * 100.0
             ax3.set_title(
-                f"Pos.{int(perc_pos)} (th. > {th:.2g}) = {cdf:.0f}%", fontsize=10
+                f"Pos.{int(perc_pos)} (th. > {th:.2g}) = {cdf:.0f}%", fontsize=9
             )
         ax3.axvline(perc_pos, linewidth=0.5, c="red", linestyle="dashed")
         ax3.fill_between(x, min(y), y, where=x >= perc_pos, alpha=0.2)
     else:
-        ax3.set_title("Ordered values", fontsize=10)
+        ax3.set_title("Ordered values", fontsize=9)
 
-    ax4 = fig.add_subplot(gs[1, 1])
+    ax4 = fig.add_subplot(gs[0, 3]) if compact else fig.add_subplot(gs[1, 1])
     xe = np.sort(values)
     ye = np.arange(1, len(xe) + 1) / float(len(xe))
     ax4.plot(xe, ye)
@@ -67,17 +70,17 @@ def plot_distribution(values: np.ndarray, perc=None, perc_pos=0, th=None, **kwar
         if perc < 1.0:
             ax4.set_title(
                 f"rev.ECDF {perc * 100:.0f}% (th.> {th:.2g}) ~ {cdf:.0f}%",
-                fontsize=10,
+                fontsize=9,
             )
         else:
             ax4.set_title(
                 f"Pos.{int(perc_pos)} of rev.ECDF (th.>{th:.2g}) ~ {cdf:.0f}%",
-                fontsize=10,
+                fontsize=9,
             )
         ax4.fill_between(xe, min(ye), ye, where=xe >= th, alpha=0.2)
         ax4.axvline(th, linewidth=0.5, c="red", linestyle="dashed")
     else:
-        ax4.set_title("ECDF", fontsize=10)
+        ax4.set_title("ECDF", fontsize=9)
 
     fig.align_labels()
     plt.tight_layout()
