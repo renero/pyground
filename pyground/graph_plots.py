@@ -106,7 +106,7 @@ def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
             with_labels=True)
 
 
-def plot_adjacency(g: nx.Graph, **kwargs):
+def plot_adjacency(g: nx.Graph, ax: plt.axes.Axes = None):
     """
     Plots the adjacency matrix as explained by scikit contributor
     Andreas Mueller in Columbia lectures, ordering and grouping
@@ -116,15 +116,18 @@ def plot_adjacency(g: nx.Graph, **kwargs):
         None
     """
     mat = graph_to_adjacency(g)
-    order = np.array(
-        hierarchy.dendrogram(hierarchy.ward(mat), no_plot=True)['ivl'])
-    order = order.astype(np.int)
-    ordered_features = [list(g.nodes)[i] for i in order]
-    num_features = len(list(g.nodes))
+    features = sorted(list(g.nodes))
+    num_features = len(features)
 
-    plt.figure(**kwargs)
-    plt.title('Grouped Adjacency Matrix')
-    plt.imshow(mat[order, :][:, order])
-    plt.colorbar(shrink=0.8)
-    plt.xticks(range(num_features), ordered_features, fontsize=8)
-    plt.yticks(range(num_features), ordered_features, fontsize=8)
+    if ax is None:
+        _, ax = plt.subplots()
+    plt.xticks(fontsize=10)
+    ax.set_title("Grouped Adjacency Matrix")
+    ax.matshow(mat, interpolation="nearest")
+    for (j, i), label in np.ndenumerate(mat):
+        ax.text(i, j, f"{label:.2g}", ha="center", va="center")
+    ax.xaxis.set_ticks_position("bottom")
+    ax.set_xticks(range(num_features))
+    ax.set_xticklabels(features)
+    ax.set_yticks(range(num_features))
+    ax.set_yticklabels(features)
