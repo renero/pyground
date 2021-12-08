@@ -314,7 +314,7 @@ def graph_weights(graph, field="weight"):
     ])
 
 
-def graph_filter(graph, threshold, field='weight'):
+def graph_filter(graph, threshold, field="weight", lower: bool = False):
     """
     Filter a graph taking only those edges whose weight is > threshold
 
@@ -322,6 +322,7 @@ def graph_filter(graph, threshold, field='weight'):
         graph: The graph to be filtered
         threshold: The minimum value to act as filter for edges weight
         field (str): The name of the weight to use as filter. Default is weight.
+        lower (bool): If True the method returns edges whose weight is < threshold.
 
     Returns:
         A graph (same type as original) with only the edges filtered.
@@ -330,6 +331,7 @@ def graph_filter(graph, threshold, field='weight'):
     ng = GType()
     ng.add_nodes_from(graph)
     for u, v, d in graph.edges(data=True):
-        if d[field] > threshold:
+        comparison = d[field] < threshold if lower else d[field] > threshold
+        if comparison:
             ng.add_edge(u, v, weight=d[field])
     return ng

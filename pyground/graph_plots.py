@@ -1,7 +1,11 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import numpy as np
 import pydot
 from IPython.display import Image, display
+from scipy.cluster import hierarchy
+
+from pyground.graph_utils import graph_to_adjacency
 
 
 def dot_graph(G: nx.DiGraph, undirected=False, **kwargs) -> None:
@@ -100,3 +104,27 @@ def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
             node_size=800,
             width=2, alpha=0.5,
             with_labels=True)
+
+
+def plot_adjacency(g: nx.Graph, **kwargs):
+    """
+    Plots the adjacency matrix as explained by scikit contributor
+    Andreas Mueller in Columbia lectures, ordering and grouping
+    (numerical) features with higher correlation.
+
+    Returns:
+        None
+    """
+    mat = graph_to_adjacency(g)
+    order = np.array(
+        hierarchy.dendrogram(hierarchy.ward(mat), no_plot=True)['ivl'])
+    order = order.astype(np.int)
+    ordered_features = [list(g.nodes)[i] for i in order]
+    num_features = len(list(g.nodes))
+
+    plt.figure(**kwargs)
+    plt.title('Grouped Adjacency Matrix')
+    plt.imshow(mat[order, :][:, order])
+    plt.colorbar(shrink=0.8)
+    plt.xticks(range(num_features), ordered_features, fontsize=8)
+    plt.yticks(range(num_features), ordered_features, fontsize=8)
