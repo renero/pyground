@@ -106,7 +106,7 @@ def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
             with_labels=True)
 
 
-def plot_adjacency(g: nx.Graph, ax: plt.axes.Axes = None):
+def plot_adjacency(g: nx.Graph, ax = None):
     """
     Plots the adjacency matrix as explained by scikit contributor
     Andreas Mueller in Columbia lectures, ordering and grouping
