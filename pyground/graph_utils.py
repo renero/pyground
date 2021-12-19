@@ -1,7 +1,7 @@
 """
 This module incorporates util functions for graphs.
 """
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Dict
 
 import networkx as nx
 import numpy
@@ -335,3 +335,34 @@ def graph_filter(graph, threshold, field="weight", lower: bool = False):
         if comparison:
             ng.add_edge(u, v, weight=d[field])
     return ng
+
+
+def graph_from_parent_ids(
+    parents_list: Dict[int, List[int]], node_names: List[str]
+) -> nx.DiGraph:
+    """
+    Build a graph from a list of parent ids. Each key in the dict is the id number
+    of a node whose parents are in the values for that key.
+
+    Example: {3: [], 0: [3], 2: [3, 0], 4: [3, 0, 2], 1: [3, 0, 2, 4]}
+
+    The node "3" has no parents, the parent of "0" is "3", and so on.
+
+    Arguments:
+         parents_list (Dict[int, List[int]]): a dictionary with nodes as keys and
+            lists of parents for each node as list of values.
+        node_names (List[str]): The names of the nodes.
+
+    Returns:
+        A directed graph representing the hierarchy represented by the list of parents
+    """
+    g = nx.DiGraph()
+    g.add_nodes_from(node_names)
+    for child in parents_list.keys():
+        parents = parents_list[child]
+        if not parents:
+            continue
+        for parent in parents:
+            g.add_edge(node_names[parent], node_names[child])
+
+    return g

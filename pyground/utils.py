@@ -6,6 +6,7 @@ from random import randint, random
 from typing import List
 
 import boto3 as boto3
+import numpy
 import numpy as np
 import pandas as pd
 import sagemaker as sagemaker
@@ -380,3 +381,24 @@ def setup_sagemaker():
     session = boto3.session.Session()
     region = session.region_name
     print(f'AWS region:{region}')
+
+
+def split_data(data: np.ndarray, train_percentage: float = 0.8):
+    """
+    Split a numpy ndarray dataset taking a given percentage for training, and
+    the remaining part for testing. The split is done by shuffling data and then
+    splitting it.
+    Args:
+        data: np.array with data
+        train_percentage: (default 0.8) the percentage to take for training.
+
+    Returns:
+        (np.array, np.array) with the two splits
+    """
+    assert isinstance(data, np.ndarray), "Data must be Numpy array"
+    split = int(data.shape[0] * train_percentage)
+    indices = np.random.permutation(data.shape[0])
+    training_idx, test_idx = indices[:split], indices[split:]
+    training, test = data[training_idx, :], data[test_idx, :]
+
+    return training, test
