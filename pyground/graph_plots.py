@@ -8,9 +8,20 @@ from scipy.cluster import hierarchy
 from pyground.graph_utils import graph_to_adjacency
 
 
-def dot_graph(G: nx.DiGraph, undirected=False, **kwargs) -> None:
+def dot_graph(G: nx.DiGraph, undirected=False, plot: bool = True, **kwargs) -> None:
     """
     Display a DOT of the graph in the notebook.
+
+    Args:
+        G (nx.Graph or DiGraph): the graph to be represented.
+        undirected (bool): default False, indicates whether the plot is forced
+            to contain no arrows.
+        plot (bool): default is True, this flag can be used to simply generate
+            the object but not plot, in case the object is needed to generate
+            a PNG version of the DOT, for instance.
+
+    Returns:
+        pydot.Dot object
     """
     # Obtain the DOT version of the NX.DiGraph and visualize it.
     G = G.to_undirected() if undirected else G
@@ -19,7 +30,10 @@ def dot_graph(G: nx.DiGraph, undirected=False, **kwargs) -> None:
     # This is to display single arrows with two heads instead of two arrows with
     # one head towards each direction.
     dot_object.set_concentrate(True)
-    plot_dot(dot_object, **kwargs)
+    if plot:
+        plot_dot(dot_object, **kwargs)
+
+    return dot_object
 
 
 def plot_dot(dot_object: pydot.Dot, **kwargs) -> None:
