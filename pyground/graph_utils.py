@@ -331,7 +331,7 @@ def graph_filter(graph, threshold, field="weight", lower: bool = False):
     ng = GType()
     ng.add_nodes_from(graph)
     for u, v, d in graph.edges(data=True):
-        comparison = d[field] < threshold if lower else d[field] > threshold
+        comparison = d[field] < threshold if lower else d[field] >= threshold
         if comparison:
             ng.add_edge(u, v, weight=d[field])
     return ng
