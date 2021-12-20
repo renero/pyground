@@ -10,8 +10,9 @@ import pandas as pd
 import pydot as pydot
 import pydotplus
 from networkx import Graph, DiGraph
-
 from pyground.file_utils import file_exists
+
+AnyGraph = Union[nx.Graph, nx.DiGraph]
 
 
 def compute_graph_metrics(truth, result):
@@ -143,7 +144,7 @@ def print_graph_edges(graph: nx.Graph):
                 edge[0], edge[1]))
 
 
-def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
+def graph_to_adjacency(graph: AnyGraph) -> numpy.ndarray:
     """
     A method to generate the adjacency matrix of the graph. Labels are
     sorted for better readability.
@@ -168,13 +169,14 @@ def graph_to_adjacency(graph: Union[Graph, DiGraph]) -> numpy.ndarray:
                         ]
                     else:
                         mat[labels.index(x)][labels.index(y)] = \
-                        graph.get_edge_data(x, y)['weight']
+                            graph.get_edge_data(x, y)['weight']
                 else:
                     mat[labels.index(x)][labels.index(y)] = 1
     return mat
 
 
-def graph_from_adjacency(adjacency: np.ndarray, node_labels=None, th=None) -> nx.DiGraph:
+def graph_from_adjacency(adjacency: np.ndarray, node_labels=None,
+                         th=None) -> nx.DiGraph:
     """
     Manually parse the adj matrix to shape a dot graph
 
@@ -202,7 +204,7 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None, th=None) -> nx
     return G
 
 
-def graph_from_adjacency_file(file:str, th=0.0) -> Tuple[nx.DiGraph, pd.DataFrame]:
+def graph_from_adjacency_file(file: str, th=0.0) -> Tuple[nx.DiGraph, pd.DataFrame]:
     """
     Read Adjacency matrix from a file and return a Graph
 
@@ -219,7 +221,7 @@ def graph_from_adjacency_file(file:str, th=0.0) -> Tuple[nx.DiGraph, pd.DataFram
     return G, df
 
 
-def graph_to_adjacency_file(graph: Union[Graph, DiGraph], output_file: str):
+def graph_to_adjacency_file(graph: AnyGraph, output_file: str):
     """
     A method to write the adjacency matrix of the graph to a file. If graph has
     weights, these are the values stored in the adjacency matrix.
@@ -258,7 +260,7 @@ def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
 
 def graph_fom_csv(
         graph_file: str,
-        graph_type: Union[Graph, DiGraph],
+        graph_type: AnyGraph,
         source_label="from",
         target_label="to",
         edge_attr_label="weight",
@@ -338,7 +340,7 @@ def graph_filter(graph, threshold, field="weight", lower: bool = False):
 
 
 def graph_from_parent_ids(
-    parents_list: Dict[int, List[int]], node_names: List[str]
+        parents_list: Dict[int, List[int]], node_names: List[str]
 ) -> nx.DiGraph:
     """
     Build a graph from a list of parent ids. Each key in the dict is the id number
@@ -366,3 +368,28 @@ def graph_from_parent_ids(
             g.add_edge(node_names[parent], node_names[child])
 
     return g
+
+
+def graph_union(graphs: List[AnyGraph]):
+    """
+    Computes the intersection of several graphs as the graph with the edges
+    in common among all them. The resulting edges' weights are the nr of times
+    that they are present in the set.
+
+    Args:
+        graphs: (List[nx.Graph] or List[nx.DiGraph]) A list of graphs
+
+    Returns:
+        nx.Digraph with the edges in common, weighted by the nr of times they appear
+    """
+    assert len(graphs) > 1, \
+        "This method needs more than one graph to compute intersection"
+    G = nx.DiGraph()
+    for g in graphs:
+        for u, v, d in g.edges(data=True):
+            if G.has_edge(u, v):
+                G[u][v]['weight'] += 1
+                continue
+            G.add_edge(u, v, weight=1)
+
+    return G
