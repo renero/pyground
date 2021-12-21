@@ -1,6 +1,7 @@
 """
 This module incorporates util functions for graphs.
 """
+from deprecated import deprecated
 from typing import List, Union, Tuple, Dict
 
 import networkx as nx
@@ -15,6 +16,7 @@ from pyground.file_utils import file_exists
 AnyGraph = Union[nx.Graph, nx.DiGraph]
 
 
+@deprecated(version="0.234", reason="Use `compare_graphs` instead.")
 def compute_graph_metrics(truth, result):
     """
     Compute graph precision and recall. Recall refers to the list of edges
@@ -105,7 +107,12 @@ def build_graph(list_nodes: List, matrix: np.ndarray,
     return graph
 
 
+@deprecated(version="0.2.34", reason="Use graph_print_edges()")
 def print_graph_edges(graph: nx.Graph):
+    graph_print_edges(graph)
+
+
+def graph_print_edges(graph: nx.Graph):
     """
     Pretty print the nodes of a graph, with weights
 
@@ -116,7 +123,7 @@ def print_graph_edges(graph: nx.Graph):
     Example:
         >>> matrix = np.array([[0., 0.3, 0.2],[0.3, 0., 0.2], [0.0, 0.2, 0.]])
         >>> dag = build_graph(['a','b','c'], matrix, threshold=0.1)
-        >>> print_graph_edges(dag)
+        >>> graph_print_edges(dag)
             Graph contains 3 edges.
             a –– b +0.3000
             a –– c +0.2000
