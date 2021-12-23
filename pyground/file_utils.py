@@ -242,12 +242,17 @@ def save_experiment(obj_name: str, folder: str, results: dict):
         results (obj): the object to be saved as experiment. This is typically a
             dictionary with different items representing different parts of the
             experiment.
+
+    Return:
+        (str) The name under which the experiment has been saved
     """
     if not os.path.exists(folder):
         Path(folder).mkdir(parents=False, exist_ok=True)
     output = valid_output_name(obj_name, folder, extension="pickle")
     with open(output, 'wb') as handle:
         pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    return output
 
 
 def load_experiment(obj_name: str, folder: str):

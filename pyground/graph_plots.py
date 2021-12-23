@@ -23,6 +23,8 @@ def dot_graph(G: nx.DiGraph, undirected=False, plot: bool = True, **kwargs) -> N
     Returns:
         pydot.Dot object
     """
+    if len(list(G.edges())) == 0:
+        return None
     # Obtain the DOT version of the NX.DiGraph and visualize it.
     G = G.to_undirected() if undirected else G
     dot_object = nx.nx_pydot.to_pydot(G)
