@@ -199,6 +199,7 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None,
     G = nx.DiGraph()
     G.add_nodes_from(range(adjacency.shape[1]))
     arrowhead = ["none", "odot", "normal"]
+    th = 0.0 if th is None else th
     for i, row in enumerate(adjacency):
         for j, value in enumerate(row):
             if value > th:
