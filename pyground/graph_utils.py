@@ -1,8 +1,10 @@
 """
 This module incorporates util functions for graphs.
 """
+from pathlib import Path
+
 from deprecated import deprecated
-from typing import List, Union, Tuple, Dict
+from typing import List, Union, Tuple, Dict, Callable
 
 import networkx as nx
 import numpy
@@ -212,7 +214,7 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None,
     return G
 
 
-def graph_from_adjacency_file(file: str, th=0.0) -> Tuple[nx.DiGraph, pd.DataFrame]:
+def graph_from_adjacency_file(file: Union[Path, str], th=0.0) -> Tuple[nx.DiGraph, pd.DataFrame]:
     """
     Read Adjacency matrix from a file and return a Graph
 
@@ -229,7 +231,7 @@ def graph_from_adjacency_file(file: str, th=0.0) -> Tuple[nx.DiGraph, pd.DataFra
     return G, df
 
 
-def graph_to_adjacency_file(graph: AnyGraph, output_file: str):
+def graph_to_adjacency_file(graph: AnyGraph, output_file: Union[Path, str]):
     """
     A method to write the adjacency matrix of the graph to a file. If graph has
     weights, these are the values stored in the adjacency matrix.
@@ -251,7 +253,7 @@ def graph_to_adjacency_file(graph: AnyGraph, output_file: str):
     f.close()
 
 
-def graph_from_dot_file(dot_file: str) -> nx.DiGraph:
+def graph_from_dot_file(dot_file: Union[str: Path]) -> nx.DiGraph:
     """ Returns a NetworkX DiGraph from a DOT FILE. """
     dot_object = pydot.graph_from_dot_file(dot_file)
     dotplus = pydotplus.graph_from_dot_data(dot_object[0].to_string())
@@ -266,12 +268,22 @@ def graph_from_dot(dot_object: pydot.Dot) -> nx.DiGraph:
     return nx.nx_pydot.from_pydot(dotplus)
 
 
+def graph_to_dot(g: AnyGraph) -> pydot.Dot:
+    """Converts a graph into a dot structure"""
+    return nx.drawing.nx_pydot.to_pydot(g)
+
+
+def graph_to_dot_file(g: AnyGraph, location: Union[Path, str]) -> None:
+    """ Converts graph into a pyDot object and saves it to specified location"""
+    nx.drawing.nx_pydot.write_dot(g, location)
+
+
 def graph_fom_csv(
-        graph_file: str,
-        graph_type: AnyGraph,
+        graph_file: Union[Path, str],
+        graph_type: Callable,
         source_label="from",
         target_label="to",
-        edge_attr_label="weight",
+        edge_attr_label=None,
 ):
     """
     Read Graph from a CSV file with "FROM", "TO" and "WEIGHT" fields
@@ -279,6 +291,9 @@ def graph_fom_csv(
     Args:
         graph_file: a full path with the filename
         graph_type: Graph or DiGraph
+        source_label: name of the "from"/cause column in the dataset
+        target_label: name of the "to"/effect column in the dataset
+        edge_attr_label: name of the weight, if any (def: None)
 
     Returns:
         networkx.Graph or networkx.DiGraph
@@ -295,7 +310,7 @@ def graph_fom_csv(
     return ugraph
 
 
-def graph_to_csv(graph, output_file):
+def graph_to_csv(graph: AnyGraph, output_file: Union[Path, str]):
     """
     Save a GrAPH to CSV file with "FROM", "TO" and "CSV"
     """
@@ -306,7 +321,7 @@ def graph_to_csv(graph, output_file):
     skeleton.to_csv(output_file, index=False)
 
 
-def graph_weights(graph, field="weight"):
+def graph_weights(graph: AnyGraph, field="weight"):
     """
     Returns graph weights, or the name of the data field for each edge in the graph.
 
@@ -324,7 +339,10 @@ def graph_weights(graph, field="weight"):
     ])
 
 
-def graph_filter(graph, threshold, field="weight", lower: bool = False):
+def graph_filter(graph: Union[Path, str],
+                 threshold,
+                 field="weight",
+                 lower: bool = False):
     """
     Filter a graph taking only those edges whose weight is > threshold
 
