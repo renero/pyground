@@ -153,17 +153,18 @@ def graph_print_edges(graph: nx.Graph):
                 edge[0], edge[1]))
 
 
-def graph_to_adjacency(graph: AnyGraph) -> numpy.ndarray:
+def graph_to_adjacency(graph: AnyGraph, weight_label: str = "weight") -> numpy.ndarray:
     """
     A method to generate the adjacency matrix of the graph. Labels are
     sorted for better readability.
 
     Args:
         graph: (Union[Graph, DiGraph]) the graph to be converted.
+        weight_label: the label used to identify the weights.
 
     Return:
         graph: (numpy.ndarray) A 2d array containing the adjacency matrix of
-            the graph
+            the graph.
     """
     symbol_map = {"o": 1, ">": 2, "-": 3}
     labels = sorted(list(graph.nodes))  # [node for node in self]
@@ -177,15 +178,18 @@ def graph_to_adjacency(graph: AnyGraph) -> numpy.ndarray:
                             graph.get_edge_data(x, y)[y]
                         ]
                     else:
-                        mat[labels.index(x)][labels.index(y)] = \
-                            graph.get_edge_data(x, y)['weight']
+                        mat[labels.index(x)][labels.index(y)] = graph.get_edge_data(
+                            x, y
+                        )[weight_label]
                 else:
                     mat[labels.index(x)][labels.index(y)] = 1
     return mat
 
 
-def graph_from_adjacency(adjacency: np.ndarray, node_labels=None,
-                         th=None) -> nx.DiGraph:
+def graph_from_adjacency(
+        adjacency: np.ndarray, node_labels=None, th=None, inverse: bool = False,
+        absolute_values: bool = False
+) -> nx.DiGraph:
     """
     Manually parse the adj matrix to shape a dot graph
 
@@ -194,18 +198,37 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None,
         node_labels: an array of same length as nr of columns in the adjacency
             matrix containing the labels to use with every node.
         th: (float) weight threshold to be considered a valid edge.
+        inverse (bool): Set to true if rows in adjacency reflects where edges are
+            comming from, instead of where are they going to.
+        absolute_values: Take absolute value of weight label to check if its greater
+            than the threshold.
 
     Returns:
          The Graph (DiGraph)
     """
     G = nx.DiGraph()
     G.add_nodes_from(range(adjacency.shape[1]))
-    arrowhead = ["none", "odot", "normal"]
-    th = 0.0 if th is None else th
+
+    # What to do with absolute values?
+    not_abs = lambda x: x
+    w_val = np.abs if absolute_values else not_abs
+    weight_gt = lambda w, thresh: w != 0.0 if thresh is None else w_val(w) > thresh
+
+    # A method to check if weight is greater than threshold, only if has been specified
+    # def check_weight(w_val, threshold):
+    #     if threshold is None:
+    #         return True
+    #     return weight(w_val) > threshold
+
+    # Do I have a threshold to consider?
     for i, row in enumerate(adjacency):
         for j, value in enumerate(row):
-            if value > th:
-                G.add_edge(i, j, weight=value, arrowhead='normal')
+            if inverse:
+                if weight_gt(adjacency[j][i], th):
+                    G.add_edge(i, j, weight=w_val(adjacency[j][i]))
+            else:
+                if weight_gt(value, th):
+                    G.add_edge(i, j, weight=w_val(value))  # , arrowhead="normal")
     # Map the current column numbers to the letters used in toy dataset
     if node_labels is not None and len(node_labels) == adjacency.shape[1]:
         mapping = dict(zip(sorted(G), node_labels))
@@ -214,7 +237,8 @@ def graph_from_adjacency(adjacency: np.ndarray, node_labels=None,
     return G
 
 
-def graph_from_adjacency_file(file: Union[Path, str], th=0.0) -> Tuple[nx.DiGraph, pd.DataFrame]:
+def graph_from_adjacency_file(file: Union[Path, str], th=0.0) -> Tuple[
+    nx.DiGraph, pd.DataFrame]:
     """
     Read Adjacency matrix from a file and return a Graph
 
