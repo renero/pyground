@@ -1,14 +1,28 @@
-import networkx as nx
+import string
+import random
+
+import graphviz
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pydot
+import pydotplus
+
 from IPython.display import Image, display
-from scipy.cluster import hierarchy
+from pydot import Dot
+from typing import List
 
-from pyground.graph_utils import graph_to_adjacency
+from pyground.graph_utils import graph_to_adjacency, AnyGraph
 
 
-def dot_graph(G: nx.DiGraph, undirected=False, plot: bool = True, **kwargs) -> None:
+def dot_graph(
+    G: nx.DiGraph,
+    undirected=False,
+    plot: bool = True,
+    name: str = "my_dotgraph",
+    odots: bool = True,
+    **kwargs,
+) -> Dot:
     """
     Display a DOT of the graph in the notebook.
 
@@ -19,6 +33,9 @@ def dot_graph(G: nx.DiGraph, undirected=False, plot: bool = True, **kwargs) -> N
         plot (bool): default is True, this flag can be used to simply generate
             the object but not plot, in case the object is needed to generate
             a PNG version of the DOT, for instance.
+        name (str): the name to be embedded in the Dot object for this graph.
+        odots (bool): represent edges with biconnections with circles (odots). if
+            this is set to false, then the edge simply has no arrowheads.
 
     Returns:
         pydot.Dot object
@@ -26,8 +43,29 @@ def dot_graph(G: nx.DiGraph, undirected=False, plot: bool = True, **kwargs) -> N
     if len(list(G.edges())) == 0:
         return None
     # Obtain the DOT version of the NX.DiGraph and visualize it.
-    G = G.to_undirected() if undirected else G
-    dot_object = nx.nx_pydot.to_pydot(G)
+    if undirected:
+        G = G.to_undirected()
+        dot_object = nx.nx_pydot.to_pydot(G)
+    else:
+        # Make a dot Object with edges reflecting biconnections as non-connected edges
+        # or arrowheads as circles.
+        dot_str = "strict digraph" + name + "{\nconcentrate=true;\n"
+        for node in G.nodes():
+            dot_str += f"{node};\n"
+        if odots:
+            options = "[arrowhead=odot, arrowtail=odot, dir=both]"
+        else:
+            options = "[dir=none]"
+        for u, v in G.edges():
+            if G.has_edge(v, u):
+                dot_str += f"{u} -> {v} {options};\n"
+            else:
+                dot_str += f"{u} -> {v};\n"
+        dot_str += "}\n"
+        # src = graphviz.Source(dot_str)
+        dot_object = pydotplus.graph_from_dot_data(dot_str)
+        # old way of getting the dot_object
+        # > dot_object = nx.nx_pydot.to_pydot(G)
 
     # This is to display single arrows with two heads instead of two arrows with
     # one head towards each direction.
@@ -36,6 +74,67 @@ def dot_graph(G: nx.DiGraph, undirected=False, plot: bool = True, **kwargs) -> N
         plot_dot(dot_object, **kwargs)
 
     return dot_object
+
+
+def dot_graphs(
+    dags: List[AnyGraph],
+    dag_names: List[str] = None,
+    num_rows=1,
+    num_cols=2,
+    undirected: bool = False,
+    odots: bool = True,
+    fig_size=(12, 8),
+    **kwargs,
+):
+    """
+    Make a plot with several Dots of the dags passed.
+    Args:
+        dags: A list of netowrkx graph objects
+        dag_names: A list of names for the graphs passed
+        num_rows: number of rows to use when creating subplots
+        num_cols: number of cols to use when creating subplots
+        undirected: whether the dot representation must be undirected (no arrows)
+        odots: whether represent biconnections with circles in both directions.
+        fig_size: tuple with the fig size for the plot.
+        **kwargs: optional arguments to be passed to matplotlib
+
+    Returns:
+        None
+    """
+    pngs = []
+    label = "".join(random.choice(string.ascii_lowercase) for _ in range(6))
+    for d, dag in enumerate(dags):
+        d_obj = dot_graph(dag, undirected=undirected, odots=odots, plot=False, **kwargs)
+        output = f"./png/dag_{label}_{d}.png"
+        d_obj.write_png(output)
+        pngs.append(output)
+
+    # Represent all the DAGs together
+    fig = plt.figure(figsize=fig_size)
+    # f, ax = plt.subplots(num_rows, num_cols, figsize=fig_size)
+    images = [plt.imread(png) for png in pngs]
+    if dag_names is None:
+        dag_names = [f"dag_{i}" for i in range(len(dags))]
+
+    if len(dags) > num_cols and num_rows == 1:
+        num_cols = len(dags)
+    for i in range(num_rows * num_cols):
+        # row = int(i / num_cols)
+        # col = np.round(((i / num_cols) - row) * num_cols).astype(int)
+        ax = fig.add_subplot(num_rows, num_cols, i + 1)
+        if i >= len(pngs):  # empty image https://stackoverflow.com/a/30073252
+            npArray = np.array([[[255, 255, 255, 255]]], dtype="uint8")
+            ax.imshow(npArray, interpolation="nearest")
+            ax.set_axis_off()
+        else:
+            ax.imshow(images[i])
+            ax.set_title(f"{dag_names[i].upper()}")
+            ax.set_axis_off()
+
+    title = "Causal DAGs"
+    fig.suptitle(title, fontsize=16)
+    plt.tight_layout()
+    plt.show()
 
 
 def plot_dot(dot_object: pydot.Dot, **kwargs) -> None:
@@ -122,7 +221,7 @@ def plot_compared_graph(G: nx.DiGraph, H: nx.DiGraph) -> None:
             with_labels=True)
 
 
-def plot_adjacency(g: nx.Graph, ax = None):
+def plot_adjacency(g: nx.Graph, ax=None):
     """
     Plots the adjacency matrix as explained by scikit contributor
     Andreas Mueller in Columbia lectures, ordering and grouping

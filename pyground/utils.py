@@ -6,7 +6,6 @@ from random import randint, random
 from typing import List
 
 import boto3 as boto3
-import numpy
 import numpy as np
 import pandas as pd
 import sagemaker as sagemaker
@@ -23,6 +22,7 @@ class betterdict(defaultdict):
     a table with clearer output, and references to keys can be done using "dot"
     notation instead the more verbose using brackets and quotes.
     """
+
     def __init__(self, *args):
         # https://stackoverflow.com/a/45411093/892904
         if args:
@@ -48,7 +48,7 @@ class betterdict(defaultdict):
             t.align[header] = "l"
 
         def tabulate_dictionary(
-            t: PrettyTable, d: dict, name: str = None
+                t: PrettyTable, d: dict, name: str = None
         ) -> PrettyTable:
             for item in d.items():
                 if isinstance(item[1], dict):

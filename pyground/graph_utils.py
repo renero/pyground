@@ -4,7 +4,7 @@ This module incorporates util functions for graphs.
 from pathlib import Path
 
 from deprecated import deprecated
-from typing import List, Union, Tuple, Dict, Callable
+from typing import List, Union, Tuple, Dict, Callable, Set
 
 import networkx as nx
 import numpy
@@ -420,7 +420,7 @@ def graph_from_parent_ids(
     return g
 
 
-def graph_union(graphs: List[AnyGraph]):
+def graph_union(graphs: List[AnyGraph], nodes: List[Union[str, int]]):
     """
     Computes the intersection of several graphs as the graph with the edges
     in common among all them. The resulting edges' weights are the nr of times
@@ -428,6 +428,9 @@ def graph_union(graphs: List[AnyGraph]):
 
     Args:
         graphs: (List[nx.Graph] or List[nx.DiGraph]) A list of graphs
+        nodes: Default list of nodes for the resulting graph, to ensure that
+            graph is populated with at least these nodes, even though not all
+            edges link them entirely
 
     Returns:
         nx.Digraph with the edges in common, weighted by the nr of times they appear
@@ -435,6 +438,8 @@ def graph_union(graphs: List[AnyGraph]):
     assert len(graphs) > 1, \
         "This method needs more than one graph to compute intersection"
     G = nx.DiGraph()
+    if nodes is not None:
+        G.add_nodes_from(nodes)
     for g in graphs:
         for u, v, d in g.edges(data=True):
             if G.has_edge(u, v):
@@ -443,3 +448,25 @@ def graph_union(graphs: List[AnyGraph]):
             G.add_edge(u, v, weight=1)
 
     return G
+
+
+def graph_biconnections(g) -> Set[Tuple[str, str]]:
+    """
+    Returns all bidirectional connections in a graph.
+    Args:
+        g: a networkx graph
+
+    Returns:
+        A set with the pairs of nodes bidirectionally connected.
+    """
+    def have_bidirectional_relationship(G, node1, node2):
+        return G.has_edge(node1, node2) and G.has_edge(node2, node1)
+
+    biconnections = set()
+    for u, v in g.edges():
+        if u > v:  # Avoid duplicates, such as (1, 2) and (2, 1)
+            v, u = u, v
+        if have_bidirectional_relationship(g, u, v):
+            biconnections.add((u, v))
+
+    return biconnections
