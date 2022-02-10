@@ -420,6 +420,14 @@ def graph_from_parent_ids(
     return g
 
 
+def graph_from_dictionay(d: Dict[str, Union[str, List[str]]]):
+    g = nx.DiGraph()
+    for node, parents in d.items():
+        for parent in parents:
+            g.add_edge(parent, node)
+    return g
+
+
 def graph_union(graphs: List[AnyGraph], nodes: List[Union[str, int]]):
     """
     Computes the intersection of several graphs as the graph with the edges
