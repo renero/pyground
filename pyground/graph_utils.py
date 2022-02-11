@@ -420,7 +420,7 @@ def graph_from_parent_ids(
     return g
 
 
-def graph_from_dictionay(d: Dict[str, Union[str, List[str]]]) -> AnyGraph:
+def graph_from_dictionary(d: Dict[str, Union[str, List[str]]]) -> AnyGraph:
     g = nx.DiGraph()
     for node, parents in d.items():
         for parent in parents:
